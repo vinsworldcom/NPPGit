@@ -130,18 +130,17 @@ void setListColumns( unsigned int uItem, std::wstring strI, std::wstring strW,
 
 /*
 Call with:
-    std::wstring selectedItems;
+    std::vector<std::wstring> selectedItems;
     if ( getListSelected( selectedItems ) )
-        MessageBox( NULL, selectedItems.c_str(), TEXT( "Selected Items" ), MB_OK );
+        MessageBox( NULL, selectedItems[0].c_str(), TEXT( "Selected Items" ), MB_OK );
     else
         MessageBox( NULL, TEXT("NONE"), TEXT( "No Selected Items" ), MB_OK );
  */
- bool getListSelected( std::wstring &selectedItems )
+std::vector<std::wstring> getListSelected(void)
 {
-    bool found = false;
+    std::vector<std::wstring> selectedItems;
     for (int itemInt = -1; (itemInt = ( int )::SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETNEXTITEM, itemInt, LVNI_SELECTED)) != -1; )
     {
-        found = true;
         TCHAR file[MAX_PATH] = {0};
 
         memset( &LvItem, 0, sizeof(LvItem) );
@@ -152,11 +151,9 @@ Call with:
         LvItem.iItem      = itemInt;
 
         SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETITEMTEXT, itemInt, (LPARAM)&LvItem );
-        selectedItems += TEXT( " " );
-        selectedItems += file;
+        selectedItems.push_back( file );
     }
-
-    return found;
+    return selectedItems;
 }
 
 bool execCommand( std::wstring command, std::wstring &wide )
@@ -493,7 +490,6 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                     }
                     else if ( ( (LPNMHDR)lParam )->code == NM_RCLICK )
                     {
-// TODO:2019-12-28:MVINCENT: Context Menu
                         ContextMenu     cm;
                         POINT           pt      = {0};
 						LVHITTESTINFO	ht		= {0};
@@ -507,11 +503,34 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
 
 						ListView_HitTest( GetDlgItem( hDialog, IDC_LSV1 ), &ht);
 
-                        std::wstring strPathName;
-                        updateLoc( strPathName );
-                        cm.SetObjects( strPathName );
-                        cm.ShowContextMenu( _hInst, nppData._nppHandle, _hSelf, pt );
-// END
+                        std::wstring wide;
+                        if ( execCommand( TEXT( "\\git.exe rev-parse --show-toplevel" ), wide ) )
+                        {
+                            wide.erase(std::remove(wide.begin(), wide.end(), '\n'), wide.end());
+
+                            std::vector<std::wstring> selectedItems = getListSelected();
+
+                            for ( unsigned int i = 0; i < selectedItems.size() ; i++ )
+                            {
+                                std::wstring tempPath = wide;
+                                tempPath += TEXT( "\\" );
+                                tempPath += selectedItems[i].c_str();
+
+                                DWORD fileOrDir = GetFileAttributes( tempPath.c_str() );
+                                if ( fileOrDir == INVALID_FILE_ATTRIBUTES )
+                                    return FALSE;
+
+                                for (int j = 0; j < tempPath.size(); j++) {
+                                    if (tempPath[j] == '/') {
+                                        tempPath[j] = '\\';
+                                    }
+                                }
+                                selectedItems[i] = tempPath;
+                            }
+
+                            cm.SetObjects( selectedItems );
+                            cm.ShowContextMenu( _hInst, nppData._nppHandle, _hSelf, pt );
+                        }
                     }
                     // else if ( ( (LPNMHDR)lParam )->code == NM_SETFOCUS )
                     // {

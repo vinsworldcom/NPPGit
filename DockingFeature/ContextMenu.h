@@ -57,7 +57,9 @@ enum eContextMenuID {
 	CTX_CUT				= 25,
 	CTX_COPY			= 26,
 	CTX_PASTE			= 27,
-	CTX_DIFF		= CTX_MAX
+	CTX_OPEN		= CTX_MAX,
+    CTX_DIFF,
+    CTX_ADD
 } ;
 
 class ContextMenu  
@@ -87,6 +89,7 @@ private:
 	LPITEMIDLIST CopyPIDL(LPCITEMIDLIST pidl, int cb = -1);
 
 	/* notepad functions */
+	void	openFile(void);
 
 private:
 	HINSTANCE				_hInst;

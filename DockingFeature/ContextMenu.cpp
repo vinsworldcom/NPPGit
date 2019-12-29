@@ -61,7 +61,6 @@ ContextMenu::~ContextMenu()
 }
 
 
-
 // this functions determines which version of IContextMenu is avaibale for those objects (always the highest one)
 // and returns that interface
 BOOL ContextMenu::GetContextMenu (void ** ppContextMenu, int & iMenuType)
@@ -183,8 +182,11 @@ UINT ContextMenu::ShowContextMenu(HINSTANCE hInst, HWND hWndNpp, HWND hWndParent
 
 	/* Add notepad menu items */
 	// if (! isFolder)
-	::AppendMenu(hMainMenu, MF_STRING, CTX_DIFF, TEXT("Diff"));
+	::AppendMenu(hMainMenu, MF_STRING, CTX_OPEN, TEXT("Open"));
 	::InsertMenu(hMainMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
+	::AppendMenu(hMainMenu, MF_STRING, CTX_DIFF, TEXT("Diff"));
+	::AppendMenu(hMainMenu, MF_STRING, CTX_ADD, TEXT("Add"));
+	::InsertMenu(hMainMenu, 4, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
 
 	if (_pidlArray != NULL)
 	{
@@ -227,7 +229,7 @@ UINT ContextMenu::ShowContextMenu(HINSTANCE hInst, HWND hWndNpp, HWND hWndParent
 
 			TCHAR	szMenuName[MAX_PATH];
 			wcscpy(szMenuName, TEXT("Standard Menu"));
-			::InsertMenu(hMainMenu, 2, MF_BYPOSITION | MF_STRING | MF_POPUP, (UINT_PTR)_hMenu, szMenuName);
+			::InsertMenu(hMainMenu, 5, MF_BYPOSITION | MF_STRING | MF_POPUP, (UINT_PTR)_hMenu, szMenuName);
 		}
 		else
 		{
@@ -275,9 +277,19 @@ UINT ContextMenu::ShowContextMenu(HINSTANCE hInst, HWND hWndNpp, HWND hWndParent
 
 		switch (idCommand)
 		{
+			case CTX_OPEN:
+			{
+				openFile();
+                break;
+			}
 			case CTX_DIFF:
 			{
 				diffFile();
+                break;
+			}
+			case CTX_ADD:
+			{
+				addFile();
                 break;
 			}
 			default: /* and greater */
@@ -538,3 +550,9 @@ int ContextMenu::GetPIDLCount (LPCITEMIDLIST pidl)
 /*********************************************************************************************
  *	Notepad specific functions
  */
+void ContextMenu::openFile(void)
+{
+	for (const auto &path : _strArray) {
+		::SendMessage(_hWndNpp, NPPM_DOOPEN, 0, (LPARAM)path.c_str());
+	}
+}
