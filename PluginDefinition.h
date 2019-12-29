@@ -37,7 +37,7 @@ const TCHAR NPP_PLUGIN_NAME[] = TEXT( "&Git SCM" );
 //
 // Here define the number of your plugin commands
 //
-const int nbFunc = 15;
+const int nbFunc = 16;
 
 
 //
@@ -75,7 +75,6 @@ bool setCommand( size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc,
 bool getTortoiseLocation( std::wstring & );
 void updatePanelLoc();
 void updatePanel();
-void clearPanel();
 void gitGui();
 void giTk();
 void DockableDlg();

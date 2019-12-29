@@ -46,6 +46,8 @@ LVCOLUMN LvCol;
 #define COL_W    1
 #define COL_FILE 2
 
+#define LSV1_REFRESH_DELAY 2000
+
 static int __stdcall BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM, LPARAM pData)
 {
     if (uMsg == BFFM_INITIALIZED)
@@ -333,7 +335,7 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                 case IDC_BTN3 :
                 {
                     statusAll();
-                    updateList();
+                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
                     return TRUE;
                 }
 
@@ -346,28 +348,28 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                 case IDC_BTN5 :
                 {
                     addFile();
-                    updateList();
+                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
                     return TRUE;
                 }
 
                 case IDC_BTN6 :
                 {
                     commitAll();
-                    updateList();
+                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
                     return TRUE;
                 }
 
                 case IDC_BTN7 :
                 {
                     unstageFile();
-                    updateList();
+                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
                     return TRUE;
                 }
 
                 case IDC_BTN8 :
                 {
                     revertFile();
-                    updateList();
+                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
                     return TRUE;
                 }
 
@@ -434,6 +436,13 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
 
             }
             return FALSE;
+        }
+
+        case WM_TIMER:
+        {
+            KillTimer( hDialog, 1 );
+            updateList();
+            return 0;
         }
 
         case WM_NOTIFY:
