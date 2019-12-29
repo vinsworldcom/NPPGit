@@ -59,7 +59,9 @@ enum eContextMenuID {
 	CTX_PASTE			= 27,
 	CTX_OPEN		= CTX_MAX,
     CTX_DIFF,
-    CTX_ADD
+    CTX_ADD,
+    CTX_UNSTAGE,
+    CTX_REVERT
 } ;
 
 class ContextMenu  

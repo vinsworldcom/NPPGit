@@ -186,7 +186,9 @@ UINT ContextMenu::ShowContextMenu(HINSTANCE hInst, HWND hWndNpp, HWND hWndParent
 	::InsertMenu(hMainMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
 	::AppendMenu(hMainMenu, MF_STRING, CTX_DIFF, TEXT("Diff"));
 	::AppendMenu(hMainMenu, MF_STRING, CTX_ADD, TEXT("Add"));
-	::InsertMenu(hMainMenu, 4, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
+	::AppendMenu(hMainMenu, MF_STRING, CTX_UNSTAGE, TEXT("Unstage"));
+	::AppendMenu(hMainMenu, MF_STRING, CTX_REVERT, TEXT("Revert"));
+	::InsertMenu(hMainMenu, 6, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
 
 	if (_pidlArray != NULL)
 	{
@@ -229,7 +231,7 @@ UINT ContextMenu::ShowContextMenu(HINSTANCE hInst, HWND hWndNpp, HWND hWndParent
 
 			TCHAR	szMenuName[MAX_PATH];
 			wcscpy(szMenuName, TEXT("Standard Menu"));
-			::InsertMenu(hMainMenu, 5, MF_BYPOSITION | MF_STRING | MF_POPUP, (UINT_PTR)_hMenu, szMenuName);
+			::InsertMenu(hMainMenu, 7, MF_BYPOSITION | MF_STRING | MF_POPUP, (UINT_PTR)_hMenu, szMenuName);
 		}
 		else
 		{
@@ -290,6 +292,16 @@ UINT ContextMenu::ShowContextMenu(HINSTANCE hInst, HWND hWndNpp, HWND hWndParent
 			case CTX_ADD:
 			{
 				addFile();
+                break;
+			}
+			case CTX_UNSTAGE:
+			{
+				unstageFile();
+                break;
+			}
+			case CTX_REVERT:
+			{
+				revertFile();
                 break;
 			}
 			default: /* and greater */

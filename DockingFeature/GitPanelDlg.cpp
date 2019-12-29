@@ -550,10 +550,10 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
             getClientRect( rc );
 
             ::SetWindowPos( GetDlgItem( hDialog, IDC_EDT1 ), NULL,
-                            rc.left + 15, rc.top + 295, rc.right - 25, 20,
+                            rc.left + 15, rc.top + 280, rc.right - 25, 20,
                             SWP_NOZORDER | SWP_SHOWWINDOW );
             ::SetWindowPos( GetDlgItem( hDialog, IDC_LSV1 ), NULL,
-                            rc.left + 15, rc.top + 325, rc.right - 25, rc.bottom - 340,
+                            rc.left + 15, rc.top + 310, rc.right - 25, rc.bottom - 325,
                             SWP_NOZORDER | SWP_SHOWWINDOW );
 
             SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_SETCOLUMNWIDTH, COL_FILE, LVSCW_AUTOSIZE_USEHEADER );
