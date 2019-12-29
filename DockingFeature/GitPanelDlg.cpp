@@ -17,10 +17,12 @@
 
 #include "GitPanelDlg.h"
 #include "../PluginDefinition.h"
+#include "ContextMenu.h"
 #include "Process.h"
 #include "resource.h"
 #include <commctrl.h>
 #include <shlobj.h>
+#include <windowsx.h>
 
 #include <locale>
 #include <codecvt>
@@ -34,6 +36,7 @@ extern bool    g_useTortoise;
 extern bool    g_NppReady;
 extern TCHAR   g_GitPath[MAX_PATH];;
 extern HWND    hDialog;
+extern NppData nppData;
 
 LVITEM   LvItem;
 LVCOLUMN LvCol;
@@ -488,6 +491,33 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                             setListColumns( 0, TEXT( "" ), TEXT( "" ), wide );
                         }
                     }
+                    else if ( ( (LPNMHDR)lParam )->code == NM_RCLICK )
+                    {
+// TODO:2019-12-28:MVINCENT: Context Menu
+                        ContextMenu     cm;
+                        POINT           pt      = {0};
+						LVHITTESTINFO	ht		= {0};
+                        DWORD           dwpos   = ::GetMessagePos();
+
+                        pt.x = GET_X_LPARAM(dwpos);
+                        pt.y = GET_Y_LPARAM(dwpos);
+
+						ht.pt = pt;
+						::ScreenToClient( GetDlgItem( hDialog, IDC_LSV1 ), &ht.pt);
+
+						ListView_HitTest( GetDlgItem( hDialog, IDC_LSV1 ), &ht);
+
+                        std::wstring strPathName;
+                        updateLoc( strPathName );
+                        cm.SetObjects( strPathName );
+                        cm.ShowContextMenu( _hInst, nppData._nppHandle, _hSelf, pt );
+// END
+                    }
+                    // else if ( ( (LPNMHDR)lParam )->code == NM_SETFOCUS )
+                    // {
+                        // updateList();
+                    // }
+
                     return FALSE;
                 }
             }
