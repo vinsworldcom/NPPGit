@@ -48,7 +48,6 @@ bool  g_NppReady    = false;
 TCHAR g_GitPath[MAX_PATH];
 
 std::wstring g_tortoiseLoc;
-bool g_haveTortoise;
 
 #define DOCKABLE_INDEX 3
 #define TORTOISE_INDEX 14
@@ -99,7 +98,11 @@ void commandMenuInit()
 	::GetPrivateProfileString( sectionName, iniKeyGitpath, TEXT(""), 
                                g_GitPath, MAX_PATH, iniFilePath );
 
-    g_haveTortoise = getTortoiseLocation( g_tortoiseLoc );
+    if ( g_useTortoise )
+    {
+        if ( ! getTortoiseLocation( g_tortoiseLoc ) )
+            g_useTortoise = false;
+    }
 
     //--------------------------------------------//
     //-- STEP 3. CUSTOMIZE YOUR PLUGIN COMMANDS --//
@@ -328,13 +331,6 @@ void ExecGitCommand( const std::wstring &cmd, bool all = false,
 void ExecTortoiseCommand( const std::wstring &cmd, bool all = false,
                           bool ALL = false )
 {
-    if ( ! g_haveTortoise )
-    {
-        MessageBox( NULL, TEXT( "Could not locate TortoiseGit" ),
-                    TEXT( "Update Failed" ), 0 );
-        return;
-    }
-
     std::vector<std::wstring> files;
 
     if ( all )
@@ -470,9 +466,19 @@ void doTortoise()
                                  MF_BYCOMMAND );
 
     if ( state & MF_CHECKED )
-        g_useTortoise = 0;
+        g_useTortoise = false;
     else
-        g_useTortoise = 1;
+    {
+        if ( ! getTortoiseLocation( g_tortoiseLoc ) )
+        {
+            MessageBox( nppData._nppHandle, TEXT( "Could not locate TortoiseGit" ),
+                        TEXT( "Not Found" ), ( MB_OK | MB_ICONWARNING | MB_APPLMODAL ) );
+            g_useTortoise = false;
+            return;
+        }
+        else
+            g_useTortoise = true;
+    }
 
     ::SendMessage( nppData._nppHandle, NPPM_SETMENUITEMCHECK,
                    funcItem[TORTOISE_INDEX]._cmdID, !( state & MF_CHECKED ) );
