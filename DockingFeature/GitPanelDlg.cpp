@@ -529,7 +529,7 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                                 if ( fileOrDir == INVALID_FILE_ATTRIBUTES )
                                     return FALSE;
 
-                                for (int j = 0; j < tempPath.size(); j++) {
+                                for (unsigned int j = 0; j < tempPath.size(); j++) {
                                     if (tempPath[j] == '/') {
                                         tempPath[j] = '\\';
                                     }

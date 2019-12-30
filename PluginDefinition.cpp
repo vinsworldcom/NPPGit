@@ -248,10 +248,10 @@ bool launchGit( std::wstring &command )
 ///
 /// @param cmd Command name to execute.
 /// @param all Execute command on all files, or just the current file.
-/// @param ALL No files
+/// @param ignoreFiles No files
 /// @param pause Pause after command.
 ///
-void ExecGitCommand( const std::wstring &cmd, bool ALL = false, bool pause = true )
+void ExecGitCommand( const std::wstring &cmd, bool ignoreFiles = false, bool pause = true )
 {
     std::vector<std::wstring> files;
 
@@ -262,7 +262,7 @@ void ExecGitCommand( const std::wstring &cmd, bool ALL = false, bool pause = tru
     command += TEXT( "\\git" );
     command += cmd + TEXT( " " );
 
-    if ( !ALL )
+    if ( !ignoreFiles )
     {
         for ( std::vector<std::wstring>::iterator itr = files.begin();
                 itr != files.end(); itr++ )
@@ -292,7 +292,7 @@ void ExecGitCommand( const std::wstring &cmd, bool ALL = false, bool pause = tru
 /// @param cmd Command name to execute.
 /// @param all Execute command on all files, or just the current file.
 ///
-void ExecTortoiseCommand( const std::wstring &cmd, bool ALL = false, bool pause = true )
+void ExecTortoiseCommand( const std::wstring &cmd, bool ignoreFiles = false, bool pause = true )
 {
     std::vector<std::wstring> files;
 
@@ -301,7 +301,7 @@ void ExecTortoiseCommand( const std::wstring &cmd, bool ALL = false, bool pause 
     std::wstring command = g_tortoiseLoc;
     command += TEXT( " /command:" ) + cmd + TEXT( " /path:\"" );
 
-    if ( !ALL )
+    if ( !ignoreFiles )
     {
         for ( std::vector<std::wstring>::iterator itr = files.begin();
                 itr != files.end(); itr++ )
