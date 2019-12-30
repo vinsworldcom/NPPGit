@@ -210,7 +210,7 @@ bool getTortoiseLocation( std::wstring &loc )
                 &length ) != ERROR_SUCCESS )
         return false;
 
-    loc = loc.append( procPath );
+    loc = procPath;
     return true;
 }
 
@@ -251,12 +251,12 @@ bool launchGit( std::wstring &command )
 /// @param ignoreFiles No files
 /// @param pause Pause after command.
 ///
-void ExecGitCommand( const std::wstring &cmd, bool ignoreFiles = false, bool pause = true )
+void ExecGitCommand(
+    const std::wstring &cmd, 
+    std::vector<std::wstring> files,
+    bool ignoreFiles = false, 
+    bool pause = true )
 {
-    std::vector<std::wstring> files;
-
-    files.push_back( getCurrentFile() );
-
     std::wstring command = TEXT( "cmd /c \"" );
     command += g_GitPath;
     command += TEXT( "\\git" );
@@ -270,7 +270,7 @@ void ExecGitCommand( const std::wstring &cmd, bool ignoreFiles = false, bool pau
             command += ( *itr );
 
             if ( itr != files.end() - 1 )
-                command += TEXT( "*" );
+                command += TEXT( " " );
         }
     }
 
@@ -292,12 +292,12 @@ void ExecGitCommand( const std::wstring &cmd, bool ignoreFiles = false, bool pau
 /// @param cmd Command name to execute.
 /// @param all Execute command on all files, or just the current file.
 ///
-void ExecTortoiseCommand( const std::wstring &cmd, bool ignoreFiles = false, bool pause = true )
+void ExecTortoiseCommand(
+    const std::wstring &cmd, 
+    std::vector<std::wstring> files,
+    bool ignoreFiles = false, 
+    bool pause = true )
 {
-    std::vector<std::wstring> files;
-
-    files.push_back( getCurrentFile() );
-
     std::wstring command = g_tortoiseLoc;
     command += TEXT( " /command:" ) + cmd + TEXT( " /path:\"" );
 
@@ -346,74 +346,142 @@ void updatePanel()
 
 void gitGui()
 {
-    ExecGitCommand( TEXT( "-gui" ), true, false );
+     std::vector<std::wstring> files = {};
+     gitGuiFiles( files );
+}
+void gitGuiFiles( std::vector<std::wstring> files )
+{
+    ExecGitCommand( TEXT( "-gui" ), files, true, false );
 }
 
 void giTk()
 {
-    ExecGitCommand( TEXT( "k" ), true, false );
+     std::vector<std::wstring> files = {};
+     giTkFiles( files );
+}
+void giTkFiles( std::vector<std::wstring> files = {} )
+{
+    ExecGitCommand( TEXT( "k" ), files, true, false );
 }
 
 void statusAll()
 {
+     std::vector<std::wstring> files = {};
+     statusAllFiles( files );
+}
+void statusAllFiles( std::vector<std::wstring> files = {} )
+{
     if ( g_useTortoise )
-        ExecTortoiseCommand( TEXT( "repostatus" ), true , true);
+        ExecTortoiseCommand( TEXT( "repostatus" ), files, true , true);
     else
-        ExecGitCommand( TEXT( " status" ), true, true);
+        ExecGitCommand( TEXT( " status" ), files, true, true);
 }
 
 void commitAll()
 {
+    std::vector<std::wstring> files = {};
+    commitAllFiles( files );
+}
+void commitAllFiles( std::vector<std::wstring> files = {} )
+{
     if ( g_useTortoise )
-        ExecTortoiseCommand( TEXT( "commit" ), true, true );
+        ExecTortoiseCommand( TEXT( "commit" ), files, true, true );
     else
-        ExecGitCommand( TEXT( " commit" ), true, true );
+        ExecGitCommand( TEXT( " commit" ), files, true, true );
 }
 
 void addFile()
 {
+     std::vector<std::wstring> files = {};
+     addFileFiles( files );
+}
+void addFileFiles( std::vector<std::wstring> files = {} )
+{
+    if ( files.size() == 0 )
+        files.push_back( getCurrentFile() );
+
     if ( g_useTortoise )
-        ExecTortoiseCommand( TEXT( "add" ), false, false );
+        ExecTortoiseCommand( TEXT( "add" ), files, false, false );
     else
-        ExecGitCommand( TEXT( " add" ), false, false );
+        ExecGitCommand( TEXT( " add" ), files, false, false );
 }
 
 void diffFile()
 {
+     std::vector<std::wstring> files = {};
+     diffFileFiles( files );
+}
+void diffFileFiles( std::vector<std::wstring> files = {} )
+{
+    if ( files.size() == 0 )
+        files.push_back( getCurrentFile() );
+
     if ( g_useTortoise )
-        ExecTortoiseCommand( TEXT( "diff" ), false, true );
+        ExecTortoiseCommand( TEXT( "diff" ), files, false, true );
     else
-        ExecGitCommand( TEXT( " diff" ), false, true );
+        ExecGitCommand( TEXT( " diff" ), files, false, true );
 }
 
 void unstageFile()
 {
-    ExecGitCommand( TEXT( " reset HEAD" ), false, false );
+     std::vector<std::wstring> files = {};
+     unstageFileFiles( files );
+}
+void unstageFileFiles( std::vector<std::wstring> files = {} )
+{
+    if ( files.size() == 0 )
+        files.push_back( getCurrentFile() );
+
+    ExecGitCommand( TEXT( " reset HEAD" ), files, false, false );
 }
 
 void revertFile()
 {
+     std::vector<std::wstring> files = {};
+     revertFileFiles( files );
+}
+void revertFileFiles( std::vector<std::wstring> files = {} )
+{
+    if ( files.size() == 0 )
+        files.push_back( getCurrentFile() );
+
     if ( g_useTortoise )
-        ExecTortoiseCommand( TEXT( "revert" ), false, false );
+        ExecTortoiseCommand( TEXT( "revert" ), files, false, false );
     else
-        ExecGitCommand( TEXT( " checkout --" ), false, false );
+        ExecGitCommand( TEXT( " checkout --" ), files, false, false );
 }
 
 void logFile()
 {
+     std::vector<std::wstring> files = {};
+     logFileFiles( files );
+}
+void logFileFiles( std::vector<std::wstring> files = {} )
+{
+    if ( files.size() == 0 )
+        files.push_back( getCurrentFile() );
+
     if ( g_useTortoise )
-        ExecTortoiseCommand( TEXT( "log" ), false, true );
+        ExecTortoiseCommand( TEXT( "log" ), files, false, true );
     else
-        ExecGitCommand( TEXT( " log" ), false, true );
+        ExecGitCommand( TEXT( " log" ), files, false, true );
 
 }
 
 void blameFile()
 {
+     std::vector<std::wstring> files = {};
+     blameFileFiles( files );
+}
+void blameFileFiles( std::vector<std::wstring> files = {} )
+{
+    if ( files.size() == 0 )
+        files.push_back( getCurrentFile() );
+
     if ( g_useTortoise )
-        ExecTortoiseCommand( TEXT( "blame" ), false, true );
+        ExecTortoiseCommand( TEXT( "blame" ), files, false, true );
     else
-        ExecGitCommand( TEXT( " blame" ), false, true );
+        ExecGitCommand( TEXT( " blame" ), files, false, true );
 }
 
 void doTortoise()

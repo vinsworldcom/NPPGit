@@ -23,6 +23,7 @@
 //
 #include "PluginInterface.h"
 #include <string>
+#include <vector>
 
 //-------------------------------------//
 //-- STEP 1. DEFINE YOUR PLUGIN NAME --//
@@ -76,16 +77,26 @@ bool getTortoiseLocation( std::wstring & );
 void updatePanelLoc();
 void updatePanel();
 void gitGui();
+void gitGuiFiles( std::vector<std::wstring> );
 void giTk();
-void DockableDlg();
+void giTkFiles( std::vector<std::wstring> );
 void statusAll();
+void statusAllFiles( std::vector<std::wstring> );
 void commitAll();
+void commitAllFiles( std::vector<std::wstring> );
 void addFile();
+void addFileFiles( std::vector<std::wstring> );
 void diffFile();
+void diffFileFiles( std::vector<std::wstring> );
 void unstageFile();
+void unstageFileFiles( std::vector<std::wstring> );
 void revertFile();
+void revertFileFiles( std::vector<std::wstring> );
 void logFile();
+void logFileFiles( std::vector<std::wstring> );
 void blameFile();
+void blameFileFiles( std::vector<std::wstring> );
 void doTortoise();
+void DockableDlg();
 
 #endif //PLUGINDEFINITION_H

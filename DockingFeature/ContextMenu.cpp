@@ -286,22 +286,22 @@ UINT ContextMenu::ShowContextMenu(HINSTANCE hInst, HWND hWndNpp, HWND hWndParent
 			}
 			case CTX_DIFF:
 			{
-				diffFile();
+				diffFileFiles( _strArray );
                 break;
 			}
 			case CTX_ADD:
 			{
-				addFile();
+				addFileFiles( _strArray );
                 break;
 			}
 			case CTX_UNSTAGE:
 			{
-				unstageFile();
+				unstageFileFiles( _strArray );
                 break;
 			}
 			case CTX_REVERT:
 			{
-				revertFile();
+				revertFileFiles( _strArray );
                 break;
 			}
 			default: /* and greater */

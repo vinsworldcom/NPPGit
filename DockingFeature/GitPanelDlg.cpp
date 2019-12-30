@@ -46,7 +46,7 @@ LVCOLUMN LvCol;
 #define COL_W    1
 #define COL_FILE 2
 
-#define LSV1_REFRESH_DELAY 2000
+#define LSV1_REFRESH_DELAY 2500
 
 static int __stdcall BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM, LPARAM pData)
 {
@@ -342,6 +342,7 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                 case IDC_BTN4 :
                 {
                     diffFile();
+                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
                     return TRUE;
                 }
 
