@@ -32,11 +32,12 @@
 #include <vector>
 
 extern NppData nppData;
+extern HWND    hDialog;
 extern bool    g_useTortoise;
 extern bool    g_NppReady;
 extern TCHAR   g_GitPath[MAX_PATH];;
 extern TCHAR   g_GitPrompt[MAX_PATH];;
-extern HWND    hDialog;
+extern bool    g_useNppColors;
 
 LVITEM   LvItem;
 LVCOLUMN LvCol;
@@ -400,8 +401,24 @@ void initDialog()
 
     imageToolbar( GetModuleHandle( TEXT("GitSCM.dll" ) ), hWndToolbar2, IDB_TOOLBAR2, numButtons2 );
 
-
+    // Edit and List controls
     HWND hList = GetDlgItem( hDialog, IDC_LSV1 );
+
+    COLORREF colorBg;
+    COLORREF colorFg;
+    if ( g_useNppColors )
+    {
+        colorBg = ( COLORREF )::SendMessage( getCurScintilla(), SCI_STYLEGETBACK, 0, 0 );
+        colorFg = ( COLORREF )::SendMessage( getCurScintilla(), SCI_STYLEGETFORE, 0, 0 );
+    }
+    else
+    {
+        colorBg = GetSysColor( COLOR_WINDOW );
+        colorFg = GetSysColor( COLOR_WINDOWTEXT );
+    }
+    ListView_SetBkColor(hList, colorBg );
+    ListView_SetTextBkColor(hList, colorBg);
+    ListView_SetTextColor(hList, colorFg);
 
     // https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win32-API
     SendMessage( hList, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, ( LVS_EX_FULLROWSELECT /*| LVS_EX_CHECKBOXES*/ ) );
@@ -672,6 +689,8 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                         ::ScreenToClient( GetDlgItem( hDialog, IDC_LSV1 ), &ht.pt);
 
                         ListView_HitTest( GetDlgItem( hDialog, IDC_LSV1 ), &ht);
+                        if ( ht.iItem == -1 )
+                            break;
 
                         std::wstring wide;
                         if ( execCommand( TEXT( "git.exe rev-parse --show-toplevel" ), wide ) )
@@ -710,7 +729,6 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
             }
             else if ( nmhdr->code == TTN_GETDISPINFO ) /* TTN_NEEDTEXT */
             {
-// TODO:2020-01-15:MVINCENT: not working??
                 UINT idButton;
                 LPTOOLTIPTEXT lpttt;
 
@@ -729,15 +747,14 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
         case WM_SIZE:
         case WM_MOVE:
         {
-// TODO:2020-01-15:MVINCENT: reposition up closer to toolbar
             RECT rc = {0};
             getClientRect( rc );
 
             ::SetWindowPos( GetDlgItem( hDialog, IDC_EDT1 ), NULL,
-                            rc.left + 15, rc.top + 150, rc.right - 25, 20,
+                            rc.left + 15, rc.top + 110, rc.right - 25, 20,
                             SWP_NOZORDER | SWP_SHOWWINDOW );
             ::SetWindowPos( GetDlgItem( hDialog, IDC_LSV1 ), NULL,
-                            rc.left + 15, rc.top + 180, rc.right - 25, rc.bottom - 195,
+                            rc.left + 15, rc.top + 140, rc.right - 25, rc.bottom - 150,
                             SWP_NOZORDER | SWP_SHOWWINDOW );
 
             SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_SETCOLUMNWIDTH, COL_FILE, LVSCW_AUTOSIZE_USEHEADER );

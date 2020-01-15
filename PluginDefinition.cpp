@@ -30,6 +30,7 @@ const TCHAR sectionName[]     = TEXT( "Git" );
 const TCHAR iniKeyTortoise[]  = TEXT( "Tortoise" );
 const TCHAR iniKeyGitPath[]   = TEXT( "GitPath" );
 const TCHAR iniKeyGitPrompt[] = TEXT( "GitPrompt" );
+const TCHAR iniUseNppColors[] = TEXT( "UseNppColors" );
 
 DemoDlg _gitPanel;
 
@@ -44,10 +45,11 @@ FuncItem funcItem[nbFunc];
 NppData nppData;
 
 TCHAR iniFilePath[MAX_PATH];
-bool  g_useTortoise = false;
-bool  g_NppReady    = false;
+bool  g_useTortoise  = false;
+bool  g_NppReady     = false;
 TCHAR g_GitPath[MAX_PATH];
 TCHAR g_GitPrompt[MAX_PATH];
+bool  g_useNppColors = false;
 
 std::wstring g_tortoiseLoc;
 
@@ -74,6 +76,8 @@ void pluginCleanUp()
                                  g_GitPath, iniFilePath);
 	::WritePrivateProfileString( sectionName, iniKeyGitPrompt, 
                                  g_GitPrompt, iniFilePath);
+    ::WritePrivateProfileString( sectionName, iniUseNppColors,
+                                 g_useNppColors ? TEXT( "1" ) : TEXT( "0" ), iniFilePath );
 }
 
 //
@@ -103,6 +107,8 @@ void commandMenuInit()
                                g_GitPath, MAX_PATH, iniFilePath );
 	::GetPrivateProfileString( sectionName, iniKeyGitPrompt, TEXT("powershell.exe"), 
                                g_GitPrompt, MAX_PATH, iniFilePath );
+    g_useNppColors = ::GetPrivateProfileInt( sectionName, iniUseNppColors,
+                                             0, iniFilePath );
 
     if ( g_useTortoise )
     {
@@ -181,6 +187,15 @@ bool setCommand( size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc,
 ///
 /// @return Current file path.
 ///
+HWND getCurScintilla()
+{
+    int which = -1;
+    ::SendMessage( nppData._nppHandle, NPPM_GETCURRENTSCINTILLA, 0,
+                   ( LPARAM )&which );
+    return ( which == 0 ) ? nppData._scintillaMainHandle :
+           nppData._scintillaSecondHandle;
+}
+
 std::wstring getCurrentFile()
 {
     TCHAR path[MAX_PATH];
