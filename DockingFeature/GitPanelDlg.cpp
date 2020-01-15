@@ -37,7 +37,6 @@ extern bool    g_NppReady;
 extern TCHAR   g_GitPath[MAX_PATH];;
 extern TCHAR   g_GitPrompt[MAX_PATH];;
 extern HWND    hDialog;
-extern NppData nppData;
 
 LVITEM   LvItem;
 LVCOLUMN LvCol;
@@ -48,6 +47,78 @@ LVCOLUMN LvCol;
 #define COL_FILE 2
 
 #define LSV1_REFRESH_DELAY 2500
+
+const int WS_TOOLBARSTYLE = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TBSTYLE_TOOLTIPS |TBSTYLE_FLAT | CCS_TOP | BTNS_AUTOSIZE | CCS_NOPARENTALIGN | CCS_NORESIZE | CCS_NODIVIDER;
+                         /* WS_CHILD | WS_VISIBLE |                                                                                                                    CCS_NORESIZE |                CCS_ADJUSTABLE */
+
+TBBUTTON tbButtonsAdd1[] =
+{
+    {MAKELONG( 0, 0 ), IDC_BTN_GITGUI,  TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 1, 0 ), IDC_BTN_GITK,    TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 2, 0 ), IDC_BTN_PROMPT,  TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {0,                0,               0,               BTNS_SEP,       {0}, 0, 0},
+    {MAKELONG( 3, 0 ), IDC_BTN_PULL,    TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 4, 0 ), IDC_BTN_STATUS,  TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {0,                0,               0,               BTNS_SEP,       {0}, 0, 0},
+    {MAKELONG( 5, 0 ), IDC_BTN_COMMIT,  TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 6, 0 ), IDC_BTN_PUSH,    TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0}
+};
+const int sizeButtonArray1 = sizeof( tbButtonsAdd1 ) / sizeof( TBBUTTON );
+const int numButtons1      = sizeButtonArray1 - 2 /* separators */;
+
+TBBUTTON tbButtonsAdd2[] =
+{
+    {MAKELONG( 0, 0 ), IDC_BTN_DIFF,    TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {0,                0,               0,               BTNS_SEP,       {0}, 0, 0},
+    {MAKELONG( 1, 0 ), IDC_BTN_ADD,     TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 2, 0 ), IDC_BTN_UNSTAGE, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 3, 0 ), IDC_BTN_REVERT,  TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {0,                0,               0,               BTNS_SEP,       {0}, 0, 0},
+    {MAKELONG( 4, 0 ), IDC_BTN_LOG,     TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 5, 0 ), IDC_BTN_BLAME,   TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 6, 0 ), IDC_BTN_REFRESH, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0}
+};
+const int sizeButtonArray2 = sizeof( tbButtonsAdd2 ) / sizeof( TBBUTTON );
+const int numButtons2      = sizeButtonArray2 - 2 /* separators */;
+
+static LPCTSTR szToolTip[16] = {
+    TEXT("Git GUI"),
+    TEXT("GiTk"),
+    TEXT("Git Prompt"),
+    TEXT("Pull"),
+    TEXT("Status"),
+    TEXT("Commit"),
+    TEXT("Push"),
+    TEXT("Diff"),
+    TEXT("Add"),
+    TEXT("Unstage"),
+    TEXT("Restore"),
+    TEXT("Log"),
+    TEXT("Blame"),
+    TEXT("Refresh")
+};
+
+LPCTSTR GetNameStrFromCmd( UINT resID )
+{
+    if ((IDC_BTN_GITGUI <= resID) && (resID <= IDC_BTN_REFRESH)) {
+        return szToolTip[resID - IDC_BTN_GITGUI];
+    }
+    return NULL;
+}
+
+void imageToolbar( HINSTANCE hInst, HWND hWndToolbar, UINT ToolbarID, const int numButtons )
+{
+    HBITMAP hbm = LoadBitmap( hInst, MAKEINTRESOURCE( ToolbarID ) );
+    BITMAP bm = {0};
+    GetObject( hbm, sizeof( BITMAP ), &bm );
+    int iImageWidth  = bm.bmWidth / numButtons;
+    int iImageHeight = bm.bmHeight;
+    HIMAGELIST himlToolBar1 = ( HIMAGELIST )SendMessage( hWndToolbar, TB_GETIMAGELIST, 0, 0 );
+    ImageList_Destroy( himlToolBar1 );
+    himlToolBar1 = ImageList_Create( iImageWidth, iImageHeight, ILC_COLOR32 | ILC_MASK, numButtons, 0 );
+    ImageList_AddMasked( himlToolBar1, hbm, RGB( 192, 192, 192 ) );
+    SendMessage( hWndToolbar, TB_SETIMAGELIST, 0, ( LPARAM )himlToolBar1 );
+}
 
 static int __stdcall BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM, LPARAM pData)
 {
@@ -287,6 +358,49 @@ void updateList()
 
 void initDialog()
 {
+    INITCOMMONCONTROLSEX ic;
+
+    ic.dwSize = sizeof( INITCOMMONCONTROLSEX );
+    ic.dwICC = ICC_BAR_CLASSES | ICC_PAGESCROLLER_CLASS;
+    InitCommonControlsEx( &ic );
+
+    HWND hWndToolbar1, hWndToolbar2, hWndPager1, hWndPager2;
+
+    // TOOLBAR1
+    // Create pager.  The parent window is the parent.
+    hWndPager1 = CreateWindow( WC_PAGESCROLLER, NULL, WS_VISIBLE | WS_CHILD | PGS_HORZ,
+                              0, 0, 200, 32, hDialog, (HMENU) IDB_PAGER1, GetModuleHandle( TEXT("GitSCM.dll" ) ), NULL );
+    // Create Toolbar.  The parent window is the Pager.
+    hWndToolbar1 = CreateWindowEx( 0, TOOLBARCLASSNAME, NULL, WS_TOOLBARSTYLE,
+                                  0, 0, 200, 32, hWndPager1, ( HMENU ) IDB_TOOLBAR1, GetModuleHandle( TEXT("GitSCM.dll" ) ), NULL );
+
+    SendMessage( hWndToolbar1, TB_BUTTONSTRUCTSIZE, sizeof( TBBUTTON ), 0 );
+    SendMessage( hWndToolbar1, TB_SETEXTENDEDSTYLE, 0, ( LPARAM ) TBSTYLE_EX_HIDECLIPPEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS );
+    SendMessage( hWndToolbar1, TB_ADDBUTTONS, sizeButtonArray1, ( LPARAM )tbButtonsAdd1 );
+    SendMessage( hWndToolbar1, TB_AUTOSIZE, 0, 0 );
+    // Notify the pager that it contains the toolbar
+    SendMessage(hWndPager1, PGM_SETCHILD, 0, (LPARAM) hWndToolbar1);
+
+    imageToolbar( GetModuleHandle( TEXT("GitSCM.dll" ) ), hWndToolbar1, IDB_TOOLBAR1, numButtons1 );
+
+    // TOOLBAR2
+    // Create pager.  The parent window is the parent.
+    hWndPager2 = CreateWindow( WC_PAGESCROLLER, NULL, WS_VISIBLE | WS_CHILD | PGS_HORZ,
+                              0, 32, 200, 32, hDialog, (HMENU) IDB_PAGER2, GetModuleHandle( TEXT("GitSCM.dll" ) ), NULL );
+    // Create Toolbar.  The parent window is the Pager.
+    hWndToolbar2 = CreateWindowEx( 0, TOOLBARCLASSNAME, NULL, WS_TOOLBARSTYLE,
+                                  0, 0, 200, 32, hWndPager2, ( HMENU ) IDB_TOOLBAR2, GetModuleHandle( TEXT("GitSCM.dll" ) ), NULL );
+
+    SendMessage( hWndToolbar2, TB_BUTTONSTRUCTSIZE, sizeof( TBBUTTON ), 0 );
+    SendMessage( hWndToolbar1, TB_SETEXTENDEDSTYLE, 0, ( LPARAM ) TBSTYLE_EX_HIDECLIPPEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS );
+    SendMessage( hWndToolbar2, TB_ADDBUTTONS, sizeButtonArray2, ( LPARAM )tbButtonsAdd2 );
+    SendMessage( hWndToolbar2, TB_AUTOSIZE, 0, 0 );
+    // in CreateWindowEx()
+    SendMessage(hWndPager2, PGM_SETCHILD, 0, (LPARAM) hWndToolbar2);
+
+    imageToolbar( GetModuleHandle( TEXT("GitSCM.dll" ) ), hWndToolbar2, IDB_TOOLBAR2, numButtons2 );
+
+
     HWND hList = GetDlgItem( hDialog, IDC_LSV1 );
 
     // https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win32-API
@@ -427,7 +541,8 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                     pushFile();
                     return TRUE;
                 }
-
+// TODO:2020-01-15:MVINCENT: IDC_BTN_REFRESH or should it be SETTINGS (see below)
+// TODO:2020-01-15:MVINCENT: no longer used - maybe move to settings dialog?
                 case IDC_BTN_GITPATH :
                 {
                     // From:
@@ -492,6 +607,19 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
         {
             switch(LOWORD(wParam))
             {
+// TODO:2020-01-15:MVINCENT: not working??
+                case TTN_NEEDTEXT: /* TTN_GETDISPINFO */
+                {
+                    UINT idButton;
+                    LPTOOLTIPTEXT lpttt;
+
+                    lpttt           = (LPTOOLTIPTEXT) lParam;
+                    lpttt->hinst    = NULL;
+                    idButton        = lpttt->hdr.idFrom;
+                    lpttt->lpszText = const_cast<LPTSTR>( GetNameStrFromCmd( idButton ) );
+                }
+                break;
+
                 case IDC_LSV1 :
                 {
                     if( ( (LPNMHDR)lParam )->code == NM_DBLCLK )
@@ -598,6 +726,7 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
         case WM_SIZE:
         case WM_MOVE:
         {
+// TODO:2020-01-15:MVINCENT: reposition up closer to toolbar
             RECT rc = {0};
             getClientRect( rc );
 
