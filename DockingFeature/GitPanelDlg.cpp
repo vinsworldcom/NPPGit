@@ -605,24 +605,13 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
 
         case WM_NOTIFY:
         {
-            switch(LOWORD(wParam))
+            LPNMHDR nmhdr = (LPNMHDR)lParam;
+
+            if ( nmhdr->hwndFrom == GetDlgItem( hDialog, IDC_LSV1 ) )
             {
-// TODO:2020-01-15:MVINCENT: not working??
-                case TTN_NEEDTEXT: /* TTN_GETDISPINFO */
+                switch ( nmhdr->code )
                 {
-                    UINT idButton;
-                    LPTOOLTIPTEXT lpttt;
-
-                    lpttt           = (LPTOOLTIPTEXT) lParam;
-                    lpttt->hinst    = NULL;
-                    idButton        = lpttt->hdr.idFrom;
-                    lpttt->lpszText = const_cast<LPTSTR>( GetNameStrFromCmd( idButton ) );
-                }
-                break;
-
-                case IDC_LSV1 :
-                {
-                    if( ( (LPNMHDR)lParam )->code == NM_DBLCLK )
+                    case NM_DBLCLK:
                     {
                         std::wstring wide;
                         if ( execCommand( TEXT( "git.exe rev-parse --show-toplevel" ), wide ) )
@@ -667,21 +656,22 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                             clearList();
                             setListColumns( 0, TEXT( "" ), TEXT( "" ), wide );
                         }
+                        break;
                     }
-                    else if ( ( (LPNMHDR)lParam )->code == NM_RCLICK )
+                    case NM_RCLICK:
                     {
                         ContextMenu     cm;
                         POINT           pt      = {0};
-						LVHITTESTINFO	ht		= {0};
+                        LVHITTESTINFO   ht      = {0};
                         DWORD           dwpos   = ::GetMessagePos();
 
                         pt.x = GET_X_LPARAM(dwpos);
                         pt.y = GET_Y_LPARAM(dwpos);
 
-						ht.pt = pt;
-						::ScreenToClient( GetDlgItem( hDialog, IDC_LSV1 ), &ht.pt);
+                        ht.pt = pt;
+                        ::ScreenToClient( GetDlgItem( hDialog, IDC_LSV1 ), &ht.pt);
 
-						ListView_HitTest( GetDlgItem( hDialog, IDC_LSV1 ), &ht);
+                        ListView_HitTest( GetDlgItem( hDialog, IDC_LSV1 ), &ht);
 
                         std::wstring wide;
                         if ( execCommand( TEXT( "git.exe rev-parse --show-toplevel" ), wide ) )
@@ -711,16 +701,29 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                             cm.SetObjects( selectedItems );
                             cm.ShowContextMenu( _hInst, nppData._nppHandle, _hSelf, pt );
                         }
+                        break;
                     }
-                    // else if ( ( (LPNMHDR)lParam )->code == NM_SETFOCUS )
-                    // {
-                        // updateList();
-                    // }
 
-                    return FALSE;
+                    default:
+                        break;
                 }
             }
-            return FALSE;
+            else if ( nmhdr->code == TTN_GETDISPINFO ) /* TTN_NEEDTEXT */
+            {
+// TODO:2020-01-15:MVINCENT: not working??
+                UINT idButton;
+                LPTOOLTIPTEXT lpttt;
+
+                lpttt           = (LPTOOLTIPTEXT) lParam;
+                lpttt->hinst    = NULL;
+                idButton        = lpttt->hdr.idFrom;
+                lpttt->lpszText = const_cast<LPTSTR>( GetNameStrFromCmd( idButton ) );
+                return TRUE;
+            }
+
+			DockingDlgInterface::run_dlgProc( message, wParam, lParam );
+
+			return FALSE;
         }
 
         case WM_SIZE:
@@ -731,15 +734,21 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
             getClientRect( rc );
 
             ::SetWindowPos( GetDlgItem( hDialog, IDC_EDT1 ), NULL,
-                            rc.left + 15, rc.top + 280, rc.right - 25, 20,
+                            rc.left + 15, rc.top + 150, rc.right - 25, 20,
                             SWP_NOZORDER | SWP_SHOWWINDOW );
             ::SetWindowPos( GetDlgItem( hDialog, IDC_LSV1 ), NULL,
-                            rc.left + 15, rc.top + 310, rc.right - 25, rc.bottom - 325,
+                            rc.left + 15, rc.top + 180, rc.right - 25, rc.bottom - 195,
                             SWP_NOZORDER | SWP_SHOWWINDOW );
 
             SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_SETCOLUMNWIDTH, COL_FILE, LVSCW_AUTOSIZE_USEHEADER );
 
             redraw();
+            return FALSE;
+        }
+
+        case WM_PAINT:
+        {
+            ::RedrawWindow( hDialog, NULL, NULL, TRUE);
             return FALSE;
         }
 
