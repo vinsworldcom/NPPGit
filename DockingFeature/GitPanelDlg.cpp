@@ -70,15 +70,15 @@ const int numButtons1      = sizeButtonArray1 - 2 /* separators */;
 
 TBBUTTON tbButtonsAdd2[] =
 {
-    {MAKELONG( 0, 0 ), IDC_BTN_DIFF,    TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
-    {0,                0,               0,               BTNS_SEP,       {0}, 0, 0},
-    {MAKELONG( 1, 0 ), IDC_BTN_ADD,     TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
-    {MAKELONG( 2, 0 ), IDC_BTN_UNSTAGE, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
-    {MAKELONG( 3, 0 ), IDC_BTN_RESTORE, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
-    {0,                0,               0,               BTNS_SEP,       {0}, 0, 0},
-    {MAKELONG( 4, 0 ), IDC_BTN_LOG,     TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
-    {MAKELONG( 5, 0 ), IDC_BTN_BLAME,   TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
-    {MAKELONG( 6, 0 ), IDC_BTN_REFRESH, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0}
+    {MAKELONG( 0, 0 ), IDC_BTN_ADD,      TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 1, 0 ), IDC_BTN_UNSTAGE,  TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 2, 0 ), IDC_BTN_RESTORE,  TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 3, 0 ), IDC_BTN_DIFF,     TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {0,                0,                0,               BTNS_SEP,       {0}, 0, 0},
+    {MAKELONG( 4, 0 ), IDC_BTN_LOG,      TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 5, 0 ), IDC_BTN_BLAME,    TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {0,                0,                0,               BTNS_SEP,       {0}, 0, 0},
+    {MAKELONG( 6, 0 ), IDC_BTN_SETTINGS, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0}
 };
 const int sizeButtonArray2 = sizeof( tbButtonsAdd2 ) / sizeof( TBBUTTON );
 const int numButtons2      = sizeButtonArray2 - 2 /* separators */;
@@ -91,13 +91,13 @@ static LPCTSTR szToolTip[16] = {
     TEXT("Status"),
     TEXT("Commit"),
     TEXT("Push"),
-    TEXT("Diff"),
     TEXT("Add"),
     TEXT("Unstage"),
     TEXT("Restore"),
+    TEXT("Diff"),
     TEXT("Log"),
     TEXT("Blame"),
-    TEXT("Refresh")
+    TEXT("Settings")
 };
 
 void doRefreshTimer()
@@ -108,7 +108,7 @@ void doRefreshTimer()
 
 LPCTSTR GetNameStrFromCmd( UINT resID )
 {
-    if ((IDC_BTN_GITGUI <= resID) && (resID <= IDC_BTN_REFRESH)) {
+    if ((IDC_BTN_GITGUI <= resID) && (resID <= IDC_BTN_SETTINGS)) {
         return szToolTip[resID - IDC_BTN_GITGUI];
     }
     return NULL;
@@ -482,7 +482,7 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
                     doTortoise();
                     return TRUE;
                 }
-
+// TODO:2020-01-15:MVINCENT: diff, add, unstage, restore operate on LSV selected files if any otherwise current NPP doc
                 case IDC_BTN_DIFF :
                 {
                     diffFile();
@@ -549,8 +549,13 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
                     pushFile();
                     return TRUE;
                 }
-// TODO:2020-01-15:MVINCENT: IDC_BTN_REFRESH or should it be SETTINGS (see below)
-// TODO:2020-01-15:MVINCENT: no longer used - maybe move to settings dialog?
+                case IDC_BTN_SETTINGS :
+                {
+                    doSettings();
+                    return TRUE;
+                }
+
+// TODO:2020-01-15:MVINCENT: move to settings dialog
                 case IDC_BTN_GITPATH :
                 {
                     // From:
@@ -736,7 +741,8 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
                         }
                         break;
                     }
-
+// TODO:2020-01-15:MVINCENT: Enter key open file (multiple selections open all?)
+// TODO:2020-01-15:MVINCENT: drag and drop?
                     default:
                         break;
                 }

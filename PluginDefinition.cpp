@@ -134,11 +134,11 @@ void commandMenuInit()
     setCommand( DOCKABLE_INDEX, TEXT( "Git Docking Panel" ), DockableDlg, NULL,
                 false );
     setCommand( 5,  TEXT( "-SEPARATOR-" ),   NULL, NULL, false );
-    setCommand( 6,  TEXT( "&Diff File" ),    diffFile, NULL, false );
-    setCommand( 7,  TEXT( "&Add File" ),     addFile, NULL, false );
-    setCommand( 8,  TEXT( "&Unstage File" ), unstageFile, NULL, false );
-    setCommand( 9,  TEXT( "&Restore File" ), restoreFile, NULL, false );
-    setCommand( 10,  TEXT( "&Log File" ),     logFile, NULL, false );
+    setCommand( 6,  TEXT( "&Add File" ),     addFile, NULL, false );
+    setCommand( 7,  TEXT( "&Unstage File" ), unstageFile, NULL, false );
+    setCommand( 8,  TEXT( "&Restore File" ), restoreFile, NULL, false );
+    setCommand( 9,  TEXT( "&Diff File" ),    diffFile, NULL, false );
+    setCommand( 10, TEXT( "&Log File" ),     logFile, NULL, false );
     setCommand( 11, TEXT( "&Blame File" ),   blameFile, NULL, false );
     setCommand( 12, TEXT( "-SEPARATOR-" ),   NULL, NULL, false );
     setCommand( 13, TEXT( "&Pull" ),         pullFile, NULL, false );
@@ -148,6 +148,7 @@ void commandMenuInit()
     setCommand( 17, TEXT( "-SEPARATOR-" ),   NULL, NULL, false );
     setCommand( TORTOISE_INDEX, TEXT( "Use &TortoiseGit" ), doTortoise, NULL,
                 g_useTortoise ? true : false );
+    setCommand( 19, TEXT( "S&ettings" ),      doSettings, NULL, false );
 }
 
 //
@@ -584,6 +585,11 @@ void doTortoise()
 
     ::SendMessage( nppData._nppHandle, NPPM_SETMENUITEMCHECK,
                    funcItem[TORTOISE_INDEX]._cmdID, !( state & MF_CHECKED ) );
+}
+
+void doSettings()
+{
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
