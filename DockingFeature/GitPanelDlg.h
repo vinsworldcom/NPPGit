@@ -32,6 +32,7 @@ bool updateLoc( std::wstring & );
 void updateListTimer();
 void updateList();
 void clearList();
+bool execCommand( std::wstring, std::wstring & );
 
 class DemoDlg : public DockingDlgInterface
 {

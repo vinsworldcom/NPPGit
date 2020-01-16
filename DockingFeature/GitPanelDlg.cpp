@@ -213,19 +213,48 @@ void setListColumns( unsigned int uItem, std::wstring strI, std::wstring strW,
 std::vector<std::wstring> getListSelected(void)
 {
     std::vector<std::wstring> selectedItems;
-    for (int itemInt = -1; ( itemInt = ( int )::SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETNEXTITEM, itemInt, LVNI_SELECTED ) ) != -1; )
+    int itemInt = -1;
+    itemInt = ( int )::SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETNEXTITEM, itemInt, LVNI_SELECTED );
+    if ( itemInt == -1 )
+        return selectedItems;
+
+    std::wstring wide;
+    if ( execCommand( TEXT( "git.exe rev-parse --show-toplevel" ), wide ) )
     {
-        TCHAR file[MAX_PATH] = {0};
+        wide.erase(std::remove(wide.begin(), wide.end(), '\n'), wide.end());
 
-        memset( &LvItem, 0, sizeof(LvItem) );
-        LvItem.mask       = LVIF_TEXT;
-        LvItem.iSubItem   = COL_FILE;
-        LvItem.pszText    = file;
-        LvItem.cchTextMax = MAX_PATH;
-        LvItem.iItem      = itemInt;
+        for (itemInt = -1; ( itemInt = ( int )::SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETNEXTITEM, itemInt, LVNI_SELECTED ) ) != -1; )
+        {
+            TCHAR file[MAX_PATH] = {0};
 
-        SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETITEMTEXT, itemInt, (LPARAM)&LvItem );
-        selectedItems.push_back( file );
+            memset( &LvItem, 0, sizeof(LvItem) );
+            LvItem.mask       = LVIF_TEXT;
+            LvItem.iSubItem   = COL_FILE;
+            LvItem.pszText    = file;
+            LvItem.cchTextMax = MAX_PATH;
+            LvItem.iItem      = itemInt;
+
+            SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETITEMTEXT, itemInt, (LPARAM)&LvItem );
+
+            std::wstring tempPath = wide;
+            tempPath += TEXT( "\\" );
+            tempPath += file;
+
+            DWORD fileOrDir = GetFileAttributes( tempPath.c_str() );
+            if ( fileOrDir == INVALID_FILE_ATTRIBUTES )
+            {
+                selectedItems = {0};
+                return selectedItems;
+            }
+
+            for (unsigned int j = 0; j < tempPath.size(); j++) {
+                if (tempPath[j] == '/') {
+                    tempPath[j] = '\\';
+                }
+            }
+
+            selectedItems.push_back( tempPath );
+        }
     }
     return selectedItems;
 }
@@ -622,127 +651,72 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
 
             if ( nmhdr->hwndFrom == GetDlgItem( hDialog, IDC_LSV1 ) )
             {
+                POINT         pt    = {0};
+                LVHITTESTINFO ht    = {0};
+                DWORD         dwpos = ::GetMessagePos();
+
+                pt.x = GET_X_LPARAM(dwpos);
+                pt.y = GET_Y_LPARAM(dwpos);
+
+                ht.pt = pt;
+                ::ScreenToClient( GetDlgItem( hDialog, IDC_LSV1 ), &ht.pt);
+
+                ListView_SubItemHitTest( GetDlgItem( hDialog, IDC_LSV1 ), &ht);
+                if ( ht.iItem == -1 )
+                    break;
+
                 switch ( nmhdr->code )
                 {
                     case NM_DBLCLK:
                     {
-                        POINT         pt    = {0};
-                        LVHITTESTINFO ht    = {0};
-                        DWORD         dwpos = ::GetMessagePos();
-
-                        pt.x = GET_X_LPARAM(dwpos);
-                        pt.y = GET_Y_LPARAM(dwpos);
-
-                        ht.pt = pt;
-                        ::ScreenToClient( GetDlgItem( hDialog, IDC_LSV1 ), &ht.pt);
-
-                        ListView_SubItemHitTest( GetDlgItem( hDialog, IDC_LSV1 ), &ht);
-                        if ( ht.iItem == -1 )
+                        std::vector<std::wstring> files = getListSelected();
+                        if ( files.size() == 0 )
                             break;
 
-                        std::wstring wide;
-                        if ( execCommand( TEXT( "git.exe rev-parse --show-toplevel" ), wide ) )
+                        if ( ht.iSubItem == COL_I )
                         {
-                            wide.erase(std::remove(wide.begin(), wide.end(), '\n'), wide.end());
-
-                            TCHAR file[MAX_PATH] = {0};
-                            memset( &LvItem, 0, sizeof(LvItem) );
-                            LvItem.mask       = LVIF_TEXT;
-                            LvItem.iSubItem   = COL_FILE;
-                            LvItem.pszText    = file;
-                            LvItem.cchTextMax = MAX_PATH;
-                            LvItem.iItem      = ht.iItem;
-
-                            SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETITEMTEXT, ht.iItem, (LPARAM)&LvItem );
-                            wide += TEXT( "\\" );
-                            wide += file;
-
-                            std::vector<std::wstring> files;
-                            files.push_back( wide.c_str() );
-                            if ( ht.iSubItem == COL_I )
+                            unstageFileFiles( files );
+                            doRefreshTimer();
+                        }
+                        else if ( ht.iSubItem == COL_W )
+                        {
+                            addFileFiles( files );
+                            doRefreshTimer();
+                        }
+                        else if ( ht.iSubItem == COL_FILE )
+                        {
+                            for ( unsigned int i = 0; i < files.size(); i++ )
                             {
-                                unstageFileFiles( files );
-                                doRefreshTimer();
-                            }
-                            else if ( ht.iSubItem == COL_W )
-                            {
-                                addFileFiles( files );
-                                doRefreshTimer();
-                            }
-                            else if ( ht.iSubItem == COL_FILE )
-                            {
-                                DWORD fileOrDir = GetFileAttributes( wide.c_str() );
+                                DWORD fileOrDir = GetFileAttributes( files[i].c_str() );
                                 if ( fileOrDir == INVALID_FILE_ATTRIBUTES )
                                     break;
                                 else if ( fileOrDir & FILE_ATTRIBUTE_DIRECTORY )
                                 {
                                     std::wstring err;
-                                    err += wide;
+                                    err += files[i];
                                     err += TEXT( "\n\nIs a directory.  Continue to open all files?" );
                                     int ret = ( int )::MessageBox( hDialog, err.c_str(), TEXT( "Continue?" ), ( MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2 | MB_APPLMODAL ) );
                                     if ( ret == IDYES )
-                                        SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )wide.c_str() );
+                                        SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )files[i].c_str() );
                                 }
                                 else
-                                    SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )wide.c_str() );
+                                    SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )files[i].c_str() );
                             }
-                        }
-                        else
-                        {
-                            clearList();
-                            setListColumns( 0, TEXT( "" ), TEXT( "" ), wide );
                         }
                         break;
                     }
                     case NM_RCLICK:
                     {
-                        ContextMenu   cm;
-                        POINT         pt    = {0};
-                        LVHITTESTINFO ht    = {0};
-                        DWORD         dwpos = ::GetMessagePos();
-
-                        pt.x = GET_X_LPARAM(dwpos);
-                        pt.y = GET_Y_LPARAM(dwpos);
-
-                        ht.pt = pt;
-                        ::ScreenToClient( GetDlgItem( hDialog, IDC_LSV1 ), &ht.pt);
-
-                        ListView_HitTest( GetDlgItem( hDialog, IDC_LSV1 ), &ht);
-                        if ( ht.iItem == -1 )
+                        ContextMenu cm;
+                        std::vector<std::wstring> files = getListSelected();
+                        if ( files.size() == 0 )
                             break;
 
-                        std::wstring wide;
-                        if ( execCommand( TEXT( "git.exe rev-parse --show-toplevel" ), wide ) )
-                        {
-                            wide.erase(std::remove(wide.begin(), wide.end(), '\n'), wide.end());
-
-                            std::vector<std::wstring> selectedItems = getListSelected();
-
-                            for ( unsigned int i = 0; i < selectedItems.size() ; i++ )
-                            {
-                                std::wstring tempPath = wide;
-                                tempPath += TEXT( "\\" );
-                                tempPath += selectedItems[i].c_str();
-
-                                DWORD fileOrDir = GetFileAttributes( tempPath.c_str() );
-                                if ( fileOrDir == INVALID_FILE_ATTRIBUTES )
-                                    return FALSE;
-
-                                for (unsigned int j = 0; j < tempPath.size(); j++) {
-                                    if (tempPath[j] == '/') {
-                                        tempPath[j] = '\\';
-                                    }
-                                }
-                                selectedItems[i] = tempPath;
-                            }
-
-                            cm.SetObjects( selectedItems );
-                            cm.ShowContextMenu( _hInst, nppData._nppHandle, _hSelf, pt );
-                        }
+                        cm.SetObjects( files );
+                        cm.ShowContextMenu( _hInst, nppData._nppHandle, _hSelf, pt );
                         break;
                     }
 // TODO:2020-01-15:MVINCENT: Enter key open file (multiple selections open all?)
-// TODO:2020-01-15:MVINCENT: drag and drop?
                     default:
                         break;
                 }
@@ -797,4 +771,5 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
         default :
             return DockingDlgInterface::run_dlgProc( message, wParam, lParam );
     }
+    return FALSE;
 }
