@@ -243,7 +243,7 @@ std::vector<std::wstring> getListSelected(void)
             DWORD fileOrDir = GetFileAttributes( tempPath.c_str() );
             if ( fileOrDir == INVALID_FILE_ATTRIBUTES )
             {
-                selectedItems = {0};
+                selectedItems = {};
                 return selectedItems;
             }
 
