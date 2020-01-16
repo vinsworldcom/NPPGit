@@ -511,31 +511,47 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
                     doTortoise();
                     return TRUE;
                 }
-// TODO:2020-01-15:MVINCENT: diff, add, unstage, restore operate on LSV selected files if any otherwise current NPP doc
+
                 case IDC_BTN_DIFF :
                 {
-                    diffFile();
+                    std::vector<std::wstring> files = getListSelected();
+                    if ( files.size() == 0 )
+                        diffFile();
+                    else
+                        diffFileFiles( files );
                     doRefreshTimer();
                     return TRUE;
                 }
 
                 case IDC_BTN_ADD :
                 {
-                    addFile();
+                    std::vector<std::wstring> files = getListSelected();
+                    if ( files.size() == 0 )
+                        addFile();
+                    else
+                        addFileFiles( files );
                     doRefreshTimer();
                     return TRUE;
                 }
 
                 case IDC_BTN_UNSTAGE :
                 {
-                    unstageFile();
+                    std::vector<std::wstring> files = getListSelected();
+                    if ( files.size() == 0 )
+                        unstageFile();
+                    else
+                        unstageFileFiles( files );
                     doRefreshTimer();
                     return TRUE;
                 }
 
                 case IDC_BTN_RESTORE :
                 {
-                    restoreFile();
+                    std::vector<std::wstring> files = getListSelected();
+                    if ( files.size() == 0 )
+                        restoreFile();
+                    else
+                        restoreFileFiles( files );
                     doRefreshTimer();
                     return TRUE;
                 }
