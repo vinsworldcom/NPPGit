@@ -47,6 +47,7 @@ LVCOLUMN LvCol;
 #define COL_W    1
 #define COL_FILE 2
 
+#define TIMER_ID           1
 #define LSV1_REFRESH_DELAY 2500
 
 const int WS_TOOLBARSTYLE = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TBSTYLE_TOOLTIPS |TBSTYLE_FLAT | CCS_TOP | BTNS_AUTOSIZE | CCS_NOPARENTALIGN | CCS_NORESIZE | CCS_NODIVIDER;
@@ -73,7 +74,7 @@ TBBUTTON tbButtonsAdd2[] =
     {0,                0,               0,               BTNS_SEP,       {0}, 0, 0},
     {MAKELONG( 1, 0 ), IDC_BTN_ADD,     TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
     {MAKELONG( 2, 0 ), IDC_BTN_UNSTAGE, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
-    {MAKELONG( 3, 0 ), IDC_BTN_REVERT,  TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
+    {MAKELONG( 3, 0 ), IDC_BTN_RESTORE, TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
     {0,                0,               0,               BTNS_SEP,       {0}, 0, 0},
     {MAKELONG( 4, 0 ), IDC_BTN_LOG,     TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
     {MAKELONG( 5, 0 ), IDC_BTN_BLAME,   TBSTATE_ENABLED, TBSTYLE_BUTTON, {0}, 0, 0},
@@ -98,6 +99,12 @@ static LPCTSTR szToolTip[16] = {
     TEXT("Blame"),
     TEXT("Refresh")
 };
+
+void doRefreshTimer()
+{
+    KillTimer( hDialog, TIMER_ID );
+    SetTimer( hDialog, TIMER_ID, LSV1_REFRESH_DELAY, NULL );
+}
 
 LPCTSTR GetNameStrFromCmd( UINT resID )
 {
@@ -203,18 +210,10 @@ void setListColumns( unsigned int uItem, std::wstring strI, std::wstring strW,
     SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_SETITEM, 0, ( LPARAM )&LvItem );
 }
 
-/*
-Call with:
-    std::vector<std::wstring> selectedItems;
-    if ( getListSelected( selectedItems ) )
-        MessageBox( NULL, selectedItems[0].c_str(), TEXT( "Selected Items" ), MB_OK );
-    else
-        MessageBox( NULL, TEXT("NONE"), TEXT( "No Selected Items" ), MB_OK );
- */
 std::vector<std::wstring> getListSelected(void)
 {
     std::vector<std::wstring> selectedItems;
-    for (int itemInt = -1; (itemInt = ( int )::SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETNEXTITEM, itemInt, LVNI_SELECTED)) != -1; )
+    for (int itemInt = -1; ( itemInt = ( int )::SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETNEXTITEM, itemInt, LVNI_SELECTED ) ) != -1; )
     {
         TCHAR file[MAX_PATH] = {0};
 
@@ -326,14 +325,12 @@ void updateListTimer()
     if ( ! g_NppReady )
         return;
 
-    clearList();
-    KillTimer( hDialog, 1 );
-    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
+    doRefreshTimer();
 }
 
 void updateList()
 {
-    KillTimer( hDialog, 1 );
+    KillTimer( hDialog, TIMER_ID );
 
     if ( ! g_NppReady )
         return;
@@ -448,8 +445,7 @@ void initDialog()
     updateList();
 }
 
-INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
-                                       LPARAM lParam )
+INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lParam )
 {
 
     ::SendMessage( GetDlgItem( hDialog, IDC_CHK_TORTOISE ), BM_SETCHECK,
@@ -490,32 +486,28 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                 case IDC_BTN_DIFF :
                 {
                     diffFile();
-                    KillTimer( hDialog, 1 );
-                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
+                    doRefreshTimer();
                     return TRUE;
                 }
 
                 case IDC_BTN_ADD :
                 {
                     addFile();
-                    KillTimer( hDialog, 1 );
-                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
+                    doRefreshTimer();
                     return TRUE;
                 }
 
                 case IDC_BTN_UNSTAGE :
                 {
                     unstageFile();
-                    KillTimer( hDialog, 1 );
-                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
+                    doRefreshTimer();
                     return TRUE;
                 }
 
-                case IDC_BTN_REVERT :
+                case IDC_BTN_RESTORE :
                 {
-                    revertFile();
-                    KillTimer( hDialog, 1 );
-                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
+                    restoreFile();
+                    doRefreshTimer();
                     return TRUE;
                 }
 
@@ -534,22 +526,21 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                 case IDC_BTN_PULL :
                 {
                     pullFile();
+                    doRefreshTimer();
                     return TRUE;
                 }
 
                 case IDC_BTN_STATUS :
                 {
                     statusAll();
-                    KillTimer( hDialog, 1 );
-                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
+                    doRefreshTimer();
                     return TRUE;
                 }
 
                 case IDC_BTN_COMMIT :
                 {
                     commitAll();
-                    KillTimer( hDialog, 1 );
-                    SetTimer( hDialog, 1, LSV1_REFRESH_DELAY, NULL );
+                    doRefreshTimer();
                     return TRUE;
                 }
 
@@ -615,7 +606,7 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
 
         case WM_TIMER:
         {
-            KillTimer( hDialog, 1 );
+            KillTimer( hDialog, TIMER_ID );
             updateList();
             return 0;
         }
@@ -630,43 +621,66 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                 {
                     case NM_DBLCLK:
                     {
+                        POINT         pt    = {0};
+                        LVHITTESTINFO ht    = {0};
+                        DWORD         dwpos = ::GetMessagePos();
+
+                        pt.x = GET_X_LPARAM(dwpos);
+                        pt.y = GET_Y_LPARAM(dwpos);
+
+                        ht.pt = pt;
+                        ::ScreenToClient( GetDlgItem( hDialog, IDC_LSV1 ), &ht.pt);
+
+                        ListView_SubItemHitTest( GetDlgItem( hDialog, IDC_LSV1 ), &ht);
+                        if ( ht.iItem == -1 )
+                            break;
+
                         std::wstring wide;
                         if ( execCommand( TEXT( "git.exe rev-parse --show-toplevel" ), wide ) )
                         {
                             wide.erase(std::remove(wide.begin(), wide.end(), '\n'), wide.end());
 
                             TCHAR file[MAX_PATH] = {0};
-                            unsigned int iSlected = ( int )::SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETNEXTITEM, (WPARAM) -1, LVNI_FOCUSED );
-
-                            // No Items in ListView
-                            if ( iSlected == -1 )
-                                break;
-
                             memset( &LvItem, 0, sizeof(LvItem) );
                             LvItem.mask       = LVIF_TEXT;
                             LvItem.iSubItem   = COL_FILE;
                             LvItem.pszText    = file;
                             LvItem.cchTextMax = MAX_PATH;
-                            LvItem.iItem      = iSlected;
+                            LvItem.iItem      = ht.iItem;
 
-                            SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETITEMTEXT, iSlected, (LPARAM)&LvItem );
+                            SendMessage( GetDlgItem( hDialog, IDC_LSV1 ), LVM_GETITEMTEXT, ht.iItem, (LPARAM)&LvItem );
                             wide += TEXT( "\\" );
                             wide += file;
 
-                            DWORD fileOrDir = GetFileAttributes( wide.c_str() );
-                            if ( fileOrDir == INVALID_FILE_ATTRIBUTES )
-                                break;
-                            else if ( fileOrDir & FILE_ATTRIBUTE_DIRECTORY )
+                            std::vector<std::wstring> files;
+                            files.push_back( wide.c_str() );
+                            if ( ht.iSubItem == COL_I )
                             {
-                                std::wstring err;
-                                err += wide;
-                                err += TEXT( "\n\nIs a directory.  Continue to open all files?" );
-                                int ret = ( int )::MessageBox( hDialog, err.c_str(), TEXT( "Continue?" ), ( MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2 | MB_APPLMODAL ) );
-                                if ( ret == IDYES )
+                                unstageFileFiles( files );
+                                doRefreshTimer();
+                            }
+                            else if ( ht.iSubItem == COL_W )
+                            {
+                                addFileFiles( files );
+                                doRefreshTimer();
+                            }
+                            else if ( ht.iSubItem == COL_FILE )
+                            {
+                                DWORD fileOrDir = GetFileAttributes( wide.c_str() );
+                                if ( fileOrDir == INVALID_FILE_ATTRIBUTES )
+                                    break;
+                                else if ( fileOrDir & FILE_ATTRIBUTE_DIRECTORY )
+                                {
+                                    std::wstring err;
+                                    err += wide;
+                                    err += TEXT( "\n\nIs a directory.  Continue to open all files?" );
+                                    int ret = ( int )::MessageBox( hDialog, err.c_str(), TEXT( "Continue?" ), ( MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2 | MB_APPLMODAL ) );
+                                    if ( ret == IDYES )
+                                        SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )wide.c_str() );
+                                }
+                                else
                                     SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )wide.c_str() );
                             }
-                            else
-                                SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )wide.c_str() );
                         }
                         else
                         {
@@ -677,10 +691,10 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam,
                     }
                     case NM_RCLICK:
                     {
-                        ContextMenu     cm;
-                        POINT           pt      = {0};
-                        LVHITTESTINFO   ht      = {0};
-                        DWORD           dwpos   = ::GetMessagePos();
+                        ContextMenu   cm;
+                        POINT         pt    = {0};
+                        LVHITTESTINFO ht    = {0};
+                        DWORD         dwpos = ::GetMessagePos();
 
                         pt.x = GET_X_LPARAM(dwpos);
                         pt.y = GET_Y_LPARAM(dwpos);

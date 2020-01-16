@@ -187,7 +187,7 @@ UINT ContextMenu::ShowContextMenu(HINSTANCE hInst, HWND hWndNpp, HWND hWndParent
 	::AppendMenu(hMainMenu, MF_STRING, CTX_DIFF, TEXT("Diff"));
 	::AppendMenu(hMainMenu, MF_STRING, CTX_ADD, TEXT("Add"));
 	::AppendMenu(hMainMenu, MF_STRING, CTX_UNSTAGE, TEXT("Unstage"));
-	::AppendMenu(hMainMenu, MF_STRING, CTX_REVERT, TEXT("Revert"));
+	::AppendMenu(hMainMenu, MF_STRING, CTX_RESTORE, TEXT("Restore"));
 	::InsertMenu(hMainMenu, 6, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
 
 	if (_pidlArray != NULL)
@@ -299,9 +299,9 @@ UINT ContextMenu::ShowContextMenu(HINSTANCE hInst, HWND hWndNpp, HWND hWndParent
 				unstageFileFiles( _strArray );
                 break;
 			}
-			case CTX_REVERT:
+			case CTX_RESTORE:
 			{
-				revertFileFiles( _strArray );
+				restoreFileFiles( _strArray );
                 break;
 			}
 			default: /* and greater */

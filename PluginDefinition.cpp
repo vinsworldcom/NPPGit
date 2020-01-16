@@ -137,7 +137,7 @@ void commandMenuInit()
     setCommand( 6,  TEXT( "&Diff File" ),    diffFile, NULL, false );
     setCommand( 7,  TEXT( "&Add File" ),     addFile, NULL, false );
     setCommand( 8,  TEXT( "&Unstage File" ), unstageFile, NULL, false );
-    setCommand( 9,  TEXT( "&Revert File" ),  revertFile, NULL, false );
+    setCommand( 9,  TEXT( "&Restore File" ), restoreFile, NULL, false );
     setCommand( 10,  TEXT( "&Log File" ),     logFile, NULL, false );
     setCommand( 11, TEXT( "&Blame File" ),   blameFile, NULL, false );
     setCommand( 12, TEXT( "-SEPARATOR-" ),   NULL, NULL, false );
@@ -487,12 +487,12 @@ void unstageFileFiles( std::vector<std::wstring> files = {} )
     ExecGitCommand( TEXT( " reset HEAD" ), files, false, false );
 }
 
-void revertFile()
+void restoreFile()
 {
      std::vector<std::wstring> files = {};
-     revertFileFiles( files );
+     restoreFileFiles( files );
 }
-void revertFileFiles( std::vector<std::wstring> files = {} )
+void restoreFileFiles( std::vector<std::wstring> files = {} )
 {
     if ( files.size() == 0 )
         files.push_back( getCurrentFile() );
