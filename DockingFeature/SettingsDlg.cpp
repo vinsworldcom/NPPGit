@@ -2,6 +2,7 @@
 #include <shlobj.h>
 
 #include "..\PluginInterface.h"
+#include "GitPanelDlg.h"
 #include "SettingsDlg.h"
 #include "resource.h"
 
@@ -9,6 +10,7 @@ extern HINSTANCE g_hInst;
 extern NppData   nppData;
 extern TCHAR     g_GitPath[MAX_PATH];
 extern TCHAR     g_GitPrompt[MAX_PATH];
+extern bool      g_useNppColors;
 
 static int __stdcall BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM, LPARAM pData)
 {
@@ -19,6 +21,9 @@ static int __stdcall BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM, LPARAM pDa
 
 INT_PTR CALLBACK SettingsDlg(HWND hWndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    ::SendMessage( GetDlgItem( hWndDlg, IDC_CHK_NPPCOLOR ), BM_SETCHECK,
+                   ( LPARAM )( g_useNppColors ? 1 : 0 ), 0 );
+
     switch(msg)
     {
         case WM_INITDIALOG:
@@ -48,6 +53,22 @@ INT_PTR CALLBACK SettingsDlg(HWND hWndDlg, UINT msg, WPARAM wParam, LPARAM lPara
                     SendMessage( GetDlgItem( hWndDlg, IDC_EDT_GITPROMPT ), WM_GETTEXT, ( MAX_PATH - 1 ), ( LPARAM ) g_GitPrompt );
                     PostMessage(hWndDlg, WM_CLOSE, 0, 0);
                     return TRUE;
+
+                case IDC_CHK_NPPCOLOR :
+                {
+                    if ( SendMessage( GetDlgItem( hWndDlg, IDC_CHK_NPPCOLOR ), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+                    {
+                      SetSysColors();
+                      g_useNppColors = false;
+                    }
+                    else
+                    {
+                      SetNppColors();
+                      g_useNppColors = true;
+                    }
+                    ChangeColors();
+                    return TRUE;
+                }
 
                 case IDC_BTN_GITPATH :
                 {

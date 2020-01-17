@@ -41,6 +41,8 @@ extern bool    g_useNppColors;
 
 LVITEM   LvItem;
 LVCOLUMN LvCol;
+COLORREF colorBg;
+COLORREF colorFg;
 
 // #define COL_CHK  0
 #define COL_I    0
@@ -383,6 +385,32 @@ void updateList()
         setListColumns( 0, TEXT( "" ), TEXT( "" ), wide );
 }
 
+void SetNppColors()
+{
+    colorBg = ( COLORREF )::SendMessage( getCurScintilla(), SCI_STYLEGETBACK, 0, 0 );
+    colorFg = ( COLORREF )::SendMessage( getCurScintilla(), SCI_STYLEGETFORE, 0, 0 );
+}
+
+void SetSysColors()
+{
+    colorBg = GetSysColor( COLOR_WINDOW );
+    colorFg = GetSysColor( COLOR_WINDOWTEXT );
+}
+
+void ChangeColors()
+{
+    HWND hList = GetDlgItem( hDialog, IDC_LSV1 );
+
+    ::SendMessage(hList, WM_SETREDRAW, FALSE, 0);
+
+    ListView_SetBkColor( hList, colorBg );
+    ListView_SetTextBkColor( hList, colorBg);
+    ListView_SetTextColor( hList, colorFg);
+
+    ::SendMessage(hList, WM_SETREDRAW, TRUE, 0);
+    ::RedrawWindow(hList, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
+}
+
 void initDialog()
 {
     INITCOMMONCONTROLSEX ic;
@@ -428,23 +456,14 @@ void initDialog()
     imageToolbar( GetModuleHandle( TEXT("GitSCM.dll" ) ), hWndToolbar2, IDB_TOOLBAR2, numButtons2 );
 
     // Edit and List controls
-    HWND hList = GetDlgItem( hDialog, IDC_LSV1 );
 
-    COLORREF colorBg;
-    COLORREF colorFg;
     if ( g_useNppColors )
-    {
-        colorBg = ( COLORREF )::SendMessage( getCurScintilla(), SCI_STYLEGETBACK, 0, 0 );
-        colorFg = ( COLORREF )::SendMessage( getCurScintilla(), SCI_STYLEGETFORE, 0, 0 );
-    }
+        SetNppColors();
     else
-    {
-        colorBg = GetSysColor( COLOR_WINDOW );
-        colorFg = GetSysColor( COLOR_WINDOWTEXT );
-    }
-    ListView_SetBkColor(hList, colorBg );
-    ListView_SetTextBkColor(hList, colorBg);
-    ListView_SetTextColor(hList, colorFg);
+        SetSysColors();
+    ChangeColors();
+
+    HWND hList = GetDlgItem( hDialog, IDC_LSV1 );
 
     // https://www.codeproject.com/Articles/2890/Using-ListView-control-under-Win32-API
     SendMessage( hList, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, ( LVS_EX_FULLROWSELECT /*| LVS_EX_CHECKBOXES*/ ) );

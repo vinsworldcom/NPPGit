@@ -33,6 +33,9 @@ void updateListWithDelay();
 void updateList();
 void clearList();
 bool execCommand( std::wstring, std::wstring & );
+void SetNppColors();
+void SetSysColors();
+void ChangeColors();
 
 class DemoDlg : public DockingDlgInterface
 {
