@@ -45,6 +45,7 @@ INT_PTR CALLBACK SettingsDlg(HWND hWndDlg, UINT msg, WPARAM wParam, LPARAM lPara
             switch (LOWORD(wParam))
             {
                 case IDB_OK:
+                    SendMessage( GetDlgItem( hWndDlg, IDC_EDT_GITPROMPT ), WM_GETTEXT, ( MAX_PATH - 1 ), ( LPARAM ) g_GitPrompt );
                     PostMessage(hWndDlg, WM_CLOSE, 0, 0);
                     return TRUE;
 
