@@ -105,7 +105,6 @@ void pushFileFiles( std::vector<std::wstring> );
 void pullFile();
 void pullFileFiles( std::vector<std::wstring> );
 void doTortoise();
-void doSettings();
 void DockableDlg();
 
 #endif //PLUGINDEFINITION_H

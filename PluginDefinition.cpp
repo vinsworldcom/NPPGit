@@ -15,6 +15,7 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#include "DockingFeature/SettingsDlg.h"
 #include "PluginDefinition.h"
 #include "DockingFeature/GitPanelDlg.h"
 #include "menuCmdID.h"
@@ -41,7 +42,8 @@ FuncItem funcItem[nbFunc];
 //
 // The data of Notepad++ that you can use in your plugin commands
 //
-NppData nppData;
+NppData   nppData;
+HINSTANCE g_hInst;
 
 TCHAR iniFilePath[MAX_PATH];
 bool  g_useTortoise  = false;
@@ -584,11 +586,6 @@ void doTortoise()
 
     ::SendMessage( nppData._nppHandle, NPPM_SETMENUITEMCHECK,
                    funcItem[TORTOISE_INDEX]._cmdID, !( state & MF_CHECKED ) );
-}
-
-void doSettings()
-{
-    MessageBoxA( nppData._nppHandle, "Settings not yet implemented", "Settings", MB_OK );
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -19,6 +19,7 @@
 #include "ContextMenu.h"
 #include "GitPanelDlg.h"
 #include "Process.h"
+#include "SettingsDlg.h"
 #include "resource.h"
 
 #include <algorithm>
