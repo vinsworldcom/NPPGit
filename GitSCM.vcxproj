@@ -160,7 +160,6 @@
     <ClCompile Include="DockingFeature\ContextMenu.cpp" />
     <ClCompile Include="DockingFeature\GitPanelDlg.cpp" />
     <ClCompile Include="DockingFeature\Process.cpp" />
-    <ClCompile Include="DockingFeature\SettingsDlg.cpp" />
     <ClCompile Include="DockingFeature\StaticDialog.cpp" />
     <ClCompile Include="GitSCM.cpp" />
     <ClCompile Include="PluginDefinition.cpp" />
@@ -173,7 +172,6 @@
     <ClInclude Include="DockingFeature\GitPanelDlg.h" />
     <ClInclude Include="DockingFeature\Process.h" />
     <ClInclude Include="DockingFeature\resource.h" />
-    <ClInclude Include="DockingFeature\SettingsDlg.h" />
     <ClInclude Include="DockingFeature\StaticDialog.h" />
     <ClInclude Include="DockingFeature\Window.h" />
     <ClInclude Include="menuCmdID.h" />

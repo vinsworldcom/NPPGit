@@ -15,21 +15,20 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#include "GitPanelDlg.h"
 #include "../PluginDefinition.h"
 #include "ContextMenu.h"
+#include "GitPanelDlg.h"
 #include "Process.h"
 #include "resource.h"
-#include <commctrl.h>
-#include <shlobj.h>
-#include <windowsx.h>
-
-#include <locale>
-#include <codecvt>
 
 #include <algorithm>
+#include <codecvt>
+#include <commctrl.h>
 #include <fstream>
+#include <locale>
+#include <shlobj.h>
 #include <vector>
+#include <windowsx.h>
 
 extern NppData nppData;
 extern HWND    hDialog;

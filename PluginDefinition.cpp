@@ -16,14 +16,13 @@
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "PluginDefinition.h"
-#include "menuCmdID.h"
 #include "DockingFeature/GitPanelDlg.h"
-#include "DockingFeature/SettingsDlg.h"
+#include "menuCmdID.h"
 #include "stdafx.h"
 
+#include <shlwapi.h>
 #include <string>
 #include <vector>
-#include <shlwapi.h>
 
 const TCHAR configFileName[]  = TEXT( "GitSCM.ini" );
 const TCHAR sectionName[]     = TEXT( "Git" );
@@ -589,7 +588,7 @@ void doTortoise()
 
 void doSettings()
 {
-
+    MessageBoxA( nppData._nppHandle, "Settings not yet implemented", "Settings", MB_OK );
 }
 
 ////////////////////////////////////////////////////////////////////////////

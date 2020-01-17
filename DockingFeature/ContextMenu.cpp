@@ -25,10 +25,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
 // #include "stdafx.h"
-#include <string.h>
 #include "ContextMenu.h"
 #include "../Notepad_plus_msgs.h"
 #include "../PluginDefinition.h"
+
+#include <string.h>
 
 IContextMenu2 * g_IContext2		= NULL;
 IContextMenu3 * g_IContext3		= NULL;
