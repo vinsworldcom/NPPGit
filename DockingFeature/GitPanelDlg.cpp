@@ -349,7 +349,7 @@ bool execCommand( std::wstring command, std::wstring &wide )
     return false;
 }
 
-void updateListTimer()
+void updateListWithDelay()
 {
     if ( ! g_NppReady )
         return;

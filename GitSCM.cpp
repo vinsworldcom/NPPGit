@@ -69,11 +69,11 @@ extern "C" __declspec( dllexport ) void beNotified( SCNotification *notifyCode )
     {
         case NPPN_READY:
             g_NppReady = true;
+            updatePanelLoc();
             break;
 
-// TODO:2019-12-25:MVINCENT: if updatePanel() is used, 
-//                           Causes very slow tab switching
-//                           Not quite as threaded as one would think
+// TODO:2019-12-25:MVINCENT: if updatePanel() is used, Causes very slow tab switching
+//                           Convert Process.cpp CreateProcess to CreateThread
         case NPPN_BUFFERACTIVATED:
         {
             if ( g_NppReady )    

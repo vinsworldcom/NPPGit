@@ -17,13 +17,13 @@
 
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
-
+#include "DockingFeature/GitPanelDlg.h"
+#include "DockingFeature/SettingsDlg.h"
 #include "stdafx.h"
+
 #include <string>
 #include <vector>
 #include <shlwapi.h>
-
-#include "DockingFeature/GitPanelDlg.h"
 
 const TCHAR configFileName[]  = TEXT( "GitSCM.ini" );
 const TCHAR sectionName[]     = TEXT( "Git" );
@@ -372,8 +372,8 @@ void updatePanelLoc()
     {
         std::wstring temp;
         updateLoc( temp );
+        updateListWithDelay();
     }
-    updateListTimer();
 }
 
 void updatePanel()

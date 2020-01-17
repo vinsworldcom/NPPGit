@@ -23,6 +23,7 @@
 #define IDC_STATIC  -1
 #endif
 
+// Docking
 #define IDD_PLUGINGITPANEL 2500
 
 #define IDI_PLUGINGITPANEL 2501
@@ -53,5 +54,10 @@
 #define IDC_CHK_TORTOISE  (IDD_PLUGINGITPANEL + 102)
 #define IDC_LSV1          (IDD_PLUGINGITPANEL + 103)
 #define IDC_EDT1          (IDD_PLUGINGITPANEL + 104)
+
+// About
+#define IDD_ABOUT    30000
+
+#define IDB_OK       (IDD_ABOUT + 1)
 
 #endif // RESOURCE_H
