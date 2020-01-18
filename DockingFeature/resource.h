@@ -34,8 +34,6 @@
 #define IDB_PAGER1   1701
 #define IDB_PAGER2   1702
 
-#define IDB_TOOLBAR       1600
-
 #define IDC_BTN_GITGUI    (IDB_TOOLBAR1 + 1)
 #define IDC_BTN_GITK      (IDB_TOOLBAR1 + 2)
 #define IDC_BTN_PROMPT    (IDB_TOOLBAR1 + 3)
