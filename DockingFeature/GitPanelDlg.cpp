@@ -615,9 +615,8 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
                 case MAKELONG( IDC_EDT1, EN_SETFOCUS ) :
                 {
                     updateList();
-                    return FALSE;
+                    return TRUE;
                 }
-
             }
             return FALSE;
         }
@@ -626,33 +625,33 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
         {
             KillTimer( hDialog, TIMER_ID );
             updateList();
-            return 0;
+            return FALSE;
         }
 
         case WM_NOTIFY:
         {
             LPNMHDR nmhdr = (LPNMHDR)lParam;
 
-            if ( nmhdr->hwndFrom == GetDlgItem( hDialog, IDC_LSV1 ) )
+            switch ( nmhdr->code )
             {
-                POINT         pt    = {0};
-                LVHITTESTINFO ht    = {0};
-                DWORD         dwpos = ::GetMessagePos();
-
-                pt.x = GET_X_LPARAM(dwpos);
-                pt.y = GET_Y_LPARAM(dwpos);
-
-                ht.pt = pt;
-                ::ScreenToClient( GetDlgItem( hDialog, IDC_LSV1 ), &ht.pt);
-
-                ListView_SubItemHitTest( GetDlgItem( hDialog, IDC_LSV1 ), &ht);
-                if ( ht.iItem == -1 )
-                    break;
-
-                switch ( nmhdr->code )
+                case NM_DBLCLK:
                 {
-                    case NM_DBLCLK:
+                    if ( nmhdr->hwndFrom == GetDlgItem( hDialog, IDC_LSV1 ) )
                     {
+                        POINT         pt    = {0};
+                        LVHITTESTINFO ht    = {0};
+                        DWORD         dwpos = ::GetMessagePos();
+
+                        pt.x = GET_X_LPARAM(dwpos);
+                        pt.y = GET_Y_LPARAM(dwpos);
+
+                        ht.pt = pt;
+                        ::ScreenToClient( GetDlgItem( hDialog, IDC_LSV1 ), &ht.pt);
+
+                        ListView_SubItemHitTest( GetDlgItem( hDialog, IDC_LSV1 ), &ht);
+                        if ( ht.iItem == -1 )
+                            break;
+
                         std::vector<std::wstring> files = getListSelected();
                         if ( files.size() == 0 )
                             break;
@@ -687,10 +686,21 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
                                     SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )files[i].c_str() );
                             }
                         }
-                        break;
                     }
-                    case NM_RCLICK:
+                    return TRUE;
+                }
+
+                case NM_RCLICK:
+                {
+                    if ( nmhdr->hwndFrom == GetDlgItem( hDialog, IDC_LSV1 ) )
                     {
+                        POINT         pt    = {0};
+                        LVHITTESTINFO ht    = {0};
+                        DWORD         dwpos = ::GetMessagePos();
+
+                        pt.x = GET_X_LPARAM(dwpos);
+                        pt.y = GET_Y_LPARAM(dwpos);
+
                         ContextMenu cm;
                         std::vector<std::wstring> files = getListSelected();
                         if ( files.size() == 0 )
@@ -698,27 +708,22 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
 
                         cm.SetObjects( files );
                         cm.ShowContextMenu( _hInst, nppData._nppHandle, _hSelf, pt );
-                        break;
                     }
+                    return TRUE;
+                }
 // TODO:2020-01-15:MVINCENT: Enter key open file (multiple selections open all?)
-                    default:
-                        break;
+                case TTN_GETDISPINFO: /* TTN_NEEDTEXT */
+                {
+                    UINT idButton;
+                    LPTOOLTIPTEXT lpttt;
+
+                    lpttt           = (LPTOOLTIPTEXT) lParam;
+                    lpttt->hinst    = NULL;
+                    idButton        = lpttt->hdr.idFrom;
+                    lpttt->lpszText = const_cast<LPTSTR>( GetNameStrFromCmd( idButton ) );
+                    return TRUE;
                 }
             }
-            else if ( nmhdr->code == TTN_GETDISPINFO ) /* TTN_NEEDTEXT */
-            {
-                UINT idButton;
-                LPTOOLTIPTEXT lpttt;
-
-                lpttt           = (LPTOOLTIPTEXT) lParam;
-                lpttt->hinst    = NULL;
-                idButton        = lpttt->hdr.idFrom;
-                lpttt->lpszText = const_cast<LPTSTR>( GetNameStrFromCmd( idButton ) );
-                return TRUE;
-            }
-
-			DockingDlgInterface::run_dlgProc( message, wParam, lParam );
-
 			return FALSE;
         }
 
@@ -750,10 +755,10 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
         case WM_INITDIALOG :
         {
             initDialog();
+            return TRUE;
         }
 
         default :
             return DockingDlgInterface::run_dlgProc( message, wParam, lParam );
     }
-    return FALSE;
 }
