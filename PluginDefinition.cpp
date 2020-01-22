@@ -1,4 +1,4 @@
-    //this file is part of notepad++
+//this file is part of notepad++
 //Copyright (C)2003 Don HO <donho@altern.org>
 //
 //This program is free software; you can redistribute it and/or
@@ -73,9 +73,9 @@ void pluginCleanUp()
 {
     ::WritePrivateProfileString( sectionName, iniKeyTortoise,
                                  g_useTortoise ? TEXT( "1" ) : TEXT( "0" ), iniFilePath );
-	::WritePrivateProfileString( sectionName, iniKeyGitPath, 
+    ::WritePrivateProfileString( sectionName, iniKeyGitPath, 
                                  g_GitPath, iniFilePath);
-	::WritePrivateProfileString( sectionName, iniKeyGitPrompt, 
+    ::WritePrivateProfileString( sectionName, iniKeyGitPrompt, 
                                  g_GitPrompt, iniFilePath);
     ::WritePrivateProfileString( sectionName, iniUseNppColors,
                                  g_useNppColors ? TEXT( "1" ) : TEXT( "0" ), iniFilePath );
@@ -104,9 +104,9 @@ void commandMenuInit()
     // get the parameter value from plugin config
     g_useTortoise = ::GetPrivateProfileInt( sectionName, iniKeyTortoise,
                                             0, iniFilePath );
-	::GetPrivateProfileString( sectionName, iniKeyGitPath, TEXT(""), 
+    ::GetPrivateProfileString( sectionName, iniKeyGitPath, TEXT(""), 
                                g_GitPath, MAX_PATH, iniFilePath );
-	::GetPrivateProfileString( sectionName, iniKeyGitPrompt, TEXT("powershell.exe"), 
+    ::GetPrivateProfileString( sectionName, iniKeyGitPrompt, TEXT("powershell.exe"), 
                                g_GitPrompt, MAX_PATH, iniFilePath );
     g_useNppColors = ::GetPrivateProfileInt( sectionName, iniUseNppColors,
                                              0, iniFilePath );
