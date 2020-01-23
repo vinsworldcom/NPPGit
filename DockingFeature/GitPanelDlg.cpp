@@ -726,9 +726,10 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
                 case LVN_KEYDOWN:
                 {
                     LPNMLVKEYDOWN pnkd = (LPNMLVKEYDOWN) lParam;
-                    if (
-                        ( ( pnkd->wVKey == VK_RETURN ) || ( pnkd->wVKey == VK_SPACE ) )
-                        && ( nmhdr->hwndFrom == GetDlgItem( hDialog, IDC_LSV1 ) ) )
+                    if ( ( nmhdr->hwndFrom == GetDlgItem( hDialog, IDC_LSV1 ) ) &&
+                       ( ( pnkd->wVKey == VK_RETURN )
+                      || ( pnkd->wVKey == VK_SPACE )
+                      ) )
                     {
                         std::vector<std::wstring> files = getListSelected();
                         if ( files.size() == 0 )
