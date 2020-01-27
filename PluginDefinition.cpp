@@ -565,12 +565,16 @@ void pushFileFiles( std::vector<std::wstring> files = {} )
 
 void doTortoise()
 {
-    UINT state = ::GetMenuState( ::GetMenu( nppData._nppHandle ),
-                                 funcItem[TORTOISE_INDEX]._cmdID,
-                                 MF_BYCOMMAND );
+    // UINT state = ::GetMenuState( ::GetMenu( nppData._nppHandle ),
+                                 // funcItem[TORTOISE_INDEX]._cmdID,
+                                 // MF_BYCOMMAND );
 
-    if ( state & MF_CHECKED )
+    if ( g_useTortoise )
+    {
         g_useTortoise = false;
+        ::SendMessage( nppData._nppHandle, NPPM_SETMENUITEMCHECK,
+                       funcItem[TORTOISE_INDEX]._cmdID, MF_UNCHECKED );
+    }
     else
     {
         if ( ! getTortoiseLocation( g_tortoiseLoc ) )
@@ -581,11 +585,12 @@ void doTortoise()
             return;
         }
         else
+        {
             g_useTortoise = true;
+            ::SendMessage( nppData._nppHandle, NPPM_SETMENUITEMCHECK,
+                           funcItem[TORTOISE_INDEX]._cmdID, MF_CHECKED );
+        }
     }
-
-    ::SendMessage( nppData._nppHandle, NPPM_SETMENUITEMCHECK,
-                   funcItem[TORTOISE_INDEX]._cmdID, !( state & MF_CHECKED ) );
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -616,14 +621,19 @@ void DockableDlg()
                        ( LPARAM )&data );
     }
 
-    UINT state = ::GetMenuState( ::GetMenu( nppData._nppHandle ),
-                                 funcItem[DOCKABLE_INDEX]._cmdID, MF_BYCOMMAND );
+    // UINT state = ::GetMenuState( ::GetMenu( nppData._nppHandle ),
+                                 // funcItem[DOCKABLE_INDEX]._cmdID, MF_BYCOMMAND );
 
-    if ( state & MF_CHECKED )
+    if ( _gitPanel.isWindowVisible() )
+    {
         _gitPanel.display( false );
+        ::SendMessage( nppData._nppHandle, NPPM_SETMENUITEMCHECK,
+                       funcItem[DOCKABLE_INDEX]._cmdID, MF_UNCHECKED );
+    }
     else
+    {
         _gitPanel.display();
-
-    ::SendMessage( nppData._nppHandle, NPPM_SETMENUITEMCHECK,
-                   funcItem[DOCKABLE_INDEX]._cmdID, !( state & MF_CHECKED ) );
+        ::SendMessage( nppData._nppHandle, NPPM_SETMENUITEMCHECK,
+                       funcItem[DOCKABLE_INDEX]._cmdID, MF_CHECKED );
+    }
 }
