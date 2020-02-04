@@ -486,6 +486,31 @@ void initDialog()
     updateList();
 }
 
+void gotoFile()
+{
+    std::vector<std::wstring> files = getListSelected();
+    if ( files.size() == 0 )
+        return;
+
+    for ( unsigned int i = 0; i < files.size(); i++ )
+    {
+        DWORD fileOrDir = GetFileAttributes( files[i].c_str() );
+        if ( fileOrDir == INVALID_FILE_ATTRIBUTES )
+            return;
+        else if ( fileOrDir & FILE_ATTRIBUTE_DIRECTORY )
+        {
+            std::wstring err;
+            err += files[i];
+            err += TEXT( "\n\nIs a directory.  Continue to open all files?" );
+            int ret = ( int )::MessageBox( hDialog, err.c_str(), TEXT( "Continue?" ), ( MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2 | MB_APPLMODAL ) );
+            if ( ret == IDYES )
+                SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )files[i].c_str() );
+        }
+        else
+            SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )files[i].c_str() );
+    }
+}
+
 INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lParam )
 {
 
@@ -617,6 +642,15 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
                     updateList();
                     return TRUE;
                 }
+
+                // Trap VK_ENTER in the LISTVIEW
+                case IDOK :
+                { 
+                    HWND hWndCtrl = GetFocus();
+                    if ( hWndCtrl == GetDlgItem( hDialog, IDC_LSV1 ) )
+                        gotoFile();
+                    return TRUE;
+                }
             }
             return FALSE;
         }
@@ -731,27 +765,7 @@ INT_PTR CALLBACK DemoDlg::run_dlgProc( UINT message, WPARAM wParam, LPARAM lPara
                       || ( pnkd->wVKey == VK_SPACE )
                       ) )
                     {
-                        std::vector<std::wstring> files = getListSelected();
-                        if ( files.size() == 0 )
-                            break;
-
-                        for ( unsigned int i = 0; i < files.size(); i++ )
-                        {
-                            DWORD fileOrDir = GetFileAttributes( files[i].c_str() );
-                            if ( fileOrDir == INVALID_FILE_ATTRIBUTES )
-                                break;
-                            else if ( fileOrDir & FILE_ATTRIBUTE_DIRECTORY )
-                            {
-                                std::wstring err;
-                                err += files[i];
-                                err += TEXT( "\n\nIs a directory.  Continue to open all files?" );
-                                int ret = ( int )::MessageBox( hDialog, err.c_str(), TEXT( "Continue?" ), ( MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2 | MB_APPLMODAL ) );
-                                if ( ret == IDYES )
-                                    SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )files[i].c_str() );
-                            }
-                            else
-                                SendMessage( nppData._nppHandle, NPPM_DOOPEN, 0, ( LPARAM )files[i].c_str() );
-                        }
+                        gotoFile();
                     }
                     return FALSE;
                 }
